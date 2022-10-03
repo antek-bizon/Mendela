@@ -1,0 +1,108 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+table {
+    border-spacing: 0;
+}
+
+table tr td {
+    width: 20px;
+    height: 20px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    text-align: center;
+}
+
+button {
+    padding: 2px 7px;
+}
+
+.unclicked {
+    background-color: grey;
+}
+
+.clicked {
+    background-color: lightblue;
+    background-image: none;
+    border: 1px solid gray;
+}
+
+.main {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.main div {
+    margin: 5px
+}
+
+.main div input {
+    margin-left: 10px;
+}
+
+.saper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.flag0 {
+    background-image: url("img/klepa.PNG");
+}
+
+.flag1 {
+    background-image: url("./img/flaga.PNG");
+}
+
+.flag2 {
+    background-image: url("img/pyt.png");
+}
+
+.bomb {
+    background-image: url("img/pbomb.PNG");
+}
+
+.bomb-explode {
+    background-image: url("img/bomb.PNG");
+}
+
+.end-game-box {
+    margin-top: 20px !important;
+    width: 300px;
+    height: 50px;
+    border: 1px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.win {
+    background-color: lightgreen;
+}
+
+.defeat {
+    background-color: lightcoral;
+}
+
+.info {
+    width: 50%;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.info div {
+    width: 100px;
+    text-align: center;
+}

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: monospace;
+        }
+
+        .d1 {
+            height: 200px;
+            overflow: hidden;
+        }
+
+        #logo {
+            width: 500px;
+        }
+
+        .d2 {
+            width: 300px;
+            height: 300px;
+            position: relative;
+        }
+
+        #circle {
+            width: 120px;
+            position: absolute;
+        }
+
+        #textarea {
+            width: 180px;
+            height: 250px;
+            text-align: center;
+            overflow: hidden;
+            resize: none;
+        }
+    </style>
+    <script src="script.js"></script>
+</head>
+
+<body>
+    <div class="d1">
+        <img id="logo" src="https://c.tenor.com/pMhSj9NfCXsAAAAd/saul-goodman-better-call-saul.gif"
+            alt="logo">
+    </div>
+    <hr>
+    <input id="textInput" type="text">
+    <hr>
+    <h2>Punkty lecą z nieba</h2>
+    <textarea readonly="readonly" name="" id="textarea" cols="30" rows="10"></textarea>
+    <hr>
+    <div class="d2">
+        <img id="circle" src="https://static.wikia.nocookie.net/acecombat/images/5/5f/Trigger%27s_Personal_Emblem.png/revision/latest?cb=20180922153100" alt="trigger">
+    </div>
+    <script>
+        // Zadanie 1.
+        let imgLogo = document.getElementById("logo")
+        let bigger = false
+        let i = 100
+
+        setInterval(() => {
+            if (bigger) {
+                i++
+                if (i >= 100) bigger = false
+            } else {
+                i--
+                if (i <= 10) bigger = true
+            }
+            imgLogo.style.width = `${i * 5}px`
+        }, 20)
+
+        // Zadanie 2.
+        let textInput = document.getElementById("textInput")
+        let text = "No jasne, że się udało!!!           ".split("")
+        setInterval(() => {
+            text.push(text.shift())
+            textInput.value = text.join("")
+        }, 500)
+
+        // Zadanie 3.
+        let textRows = textToTextarea()
+        let textarea = document.getElementById("textarea")
+
+        setInterval(() => {
+            textRows.unshift(textRows.pop())
+            textarea.innerHTML = textRows.join("\n")
+        }, 200)
+
+        // Zadanie 4.
+        let circle = document.getElementById("circle")
+        const radius = 120
+        let angle = 0
+        setInterval(() => {
+            let x = (Math.cos(angle) * radius) + radius
+            let y = (Math.sin(angle) * radius) + radius
+
+            if (angle >= Math.PI * 2) angle = 0
+            angle += Math.PI * 0.03
+
+            circle.style.top = `${x}px`
+            circle.style.left = `${y}px`
+        }, 60)
+    </script>
+</body>
+
+</html>
