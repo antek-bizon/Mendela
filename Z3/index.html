@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Zadanie 3</title>
+    <link rel="stylesheet" href="../style.css">
     <style>
         body {
             font-family: monospace;
@@ -24,6 +25,9 @@
             width: 300px;
             height: 300px;
             position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         #circle {
@@ -34,77 +38,107 @@
         #textarea {
             width: 180px;
             height: 250px;
+            margin-top: 10px;
             text-align: center;
             overflow: hidden;
             resize: none;
+        }
+        
+        .margin {
+            margin-bottom: 10px;
+        }
+
+        .center-div {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 100%;
+            margin: 5px;
         }
     </style>
     <script src="script.js"></script>
 </head>
 
 <body>
-    <div class="d1">
-        <img id="logo" src="https://c.tenor.com/pMhSj9NfCXsAAAAd/saul-goodman-better-call-saul.gif"
-            alt="logo">
+    <div class="pattern">
+        <div class="container">
+          <div class="pattern-inner"></div>
+        </div>
     </div>
-    <hr>
-    <input id="textInput" type="text">
-    <hr>
-    <h2>Punkty lecą z nieba</h2>
-    <textarea readonly="readonly" name="" id="textarea" cols="30" rows="10"></textarea>
-    <hr>
-    <div class="d2">
-        <img id="circle" src="https://static.wikia.nocookie.net/acecombat/images/5/5f/Trigger%27s_Personal_Emblem.png/revision/latest?cb=20180922153100" alt="trigger">
+    <div class="margin">
+        <div class="d1 center-div">
+            <img id="logo" src="https://c.tenor.com/pMhSj9NfCXsAAAAd/saul-goodman-better-call-saul.gif"
+                alt="logo">
+        </div>
+        <hr>
+        <div class="center-div">
+            <input id="textInput" type="text">
+        </div>
+        <hr>
+        <div class="center-div">
+            <h2>Punkty lecą z nieba</h2>
+            <textarea readonly="readonly" name="" id="textarea" cols="30" rows="10"></textarea>
+        </div>
+        <hr>
+        <div class="d2 center-div">
+            <img id="circle" src="https://static.wikia.nocookie.net/acecombat/images/5/5f/Trigger%27s_Personal_Emblem.png/revision/latest?cb=20180922153100" alt="trigger">
+        </div>
+        <script>
+            // Zadanie 1.
+            let imgLogo = document.getElementById("logo")
+            let bigger = false
+            let i = 100
+
+            setInterval(() => {
+                if (bigger) {
+                    i++
+                    if (i >= 100) bigger = false
+                } else {
+                    i--
+                    if (i <= 10) bigger = true
+                }
+                imgLogo.style.width = `${i * 5}px`
+            }, 20)
+
+            // Zadanie 2.
+            let textInput = document.getElementById("textInput")
+            let text = "No jasne, że się udało!!!           ".split("")
+            setInterval(() => {
+                text.push(text.shift())
+                textInput.value = text.join("")
+            }, 500)
+
+            // Zadanie 3.
+            let textRows = textToTextarea()
+            let textarea = document.getElementById("textarea")
+
+            setInterval(() => {
+                textRows.unshift(textRows.pop())
+                textarea.innerHTML = textRows.join("\n")
+            }, 200)
+
+            // Zadanie 4.
+            let circle = document.getElementById("circle")
+            const radius = 120
+            let angle = 0
+            setInterval(() => {
+                let x = (Math.cos(angle) * radius) + radius
+                let y = (Math.sin(angle) * radius) + radius
+
+                if (angle >= Math.PI * 2) angle = 0
+                angle += Math.PI * 0.03
+
+                circle.style.top = `${x}px`
+                circle.style.left = `${y}px`
+            }, 60)
+        </script>
     </div>
-    <script>
-        // Zadanie 1.
-        let imgLogo = document.getElementById("logo")
-        let bigger = false
-        let i = 100
-
-        setInterval(() => {
-            if (bigger) {
-                i++
-                if (i >= 100) bigger = false
-            } else {
-                i--
-                if (i <= 10) bigger = true
-            }
-            imgLogo.style.width = `${i * 5}px`
-        }, 20)
-
-        // Zadanie 2.
-        let textInput = document.getElementById("textInput")
-        let text = "No jasne, że się udało!!!           ".split("")
-        setInterval(() => {
-            text.push(text.shift())
-            textInput.value = text.join("")
-        }, 500)
-
-        // Zadanie 3.
-        let textRows = textToTextarea()
-        let textarea = document.getElementById("textarea")
-
-        setInterval(() => {
-            textRows.unshift(textRows.pop())
-            textarea.innerHTML = textRows.join("\n")
-        }, 200)
-
-        // Zadanie 4.
-        let circle = document.getElementById("circle")
-        const radius = 120
-        let angle = 0
-        setInterval(() => {
-            let x = (Math.cos(angle) * radius) + radius
-            let y = (Math.sin(angle) * radius) + radius
-
-            if (angle >= Math.PI * 2) angle = 0
-            angle += Math.PI * 0.03
-
-            circle.style.top = `${x}px`
-            circle.style.left = `${y}px`
-        }, 60)
-    </script>
+    <div class="pattern">
+        <div class="container">
+          <div class="pattern-inner"></div>
+        </div>
+    </div>
 </body>
 
 </html>

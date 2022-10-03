@@ -4,13 +4,13 @@ function br () {
 
 function getInput () {
   return 'acccgataggcccttgagtgggaagcagcagtcttgggagatattagttctttccctggagcagccccaaattggcatctatcagacaagactactgcagcagacttcaggcacgaggggtccgggagcacccacaccgtcggtgtattatttcggctcctgggggtaagtacccggaccagacgaaagtctggtaacctaatctcgtctccacttttgtgatggagcgtaccgacgctacagggcatagagatgagaccgcgccacagttcttatcttactcttaattcgtgcgcctataattgtccttcgccgagtgagttgtgctgacagccaccaagtgggtgcgcgacctagcaggtcgaccagtaacatatgagtattcgccctgcacccgggcatatgaacccatcacggtaaccgtgcttcactgcactgtctatgcgcacgccatatcttccggcgcatatccacgcccagcttgttgtcggttagtagctccatataccggtgccaaaaaggctaccagtgttcccgatgcgctcgttataagttcagtagggaggcataatagtaaccgacgcatacagcaccctgagcttatgcttcgttaacaccgttgaaagtctagggaataggcataaaatgttgttgagattgccctatattggtcttgcgttgttagttaacaggatagaggcgcgtccttgagcctctagagtagcgggttcagagtccatgaactacgcaacacgattgactacttcactgtaccagattcgtgagccagggagctagcacgcttggtcgtatatcttcaggtccggccaggacagtcagtacttgtggcggatattcgccatccccttgtccgggtagatcggtccaactgtgctagtctaccagaagcggcggatatgcgtaggcatttaaaggtaccaacgagttcctatcactgtttttcttcgatcggaccccagcagtccattttccggctctttcgcaggtgcctccctacgtcgcgtcgcgaacaaatacctacaggtcctctacgtaatctgtacccacggatgcaatagtttcgttaaccctttagcctacatagtaataactctgacaaaagaaggggttaagtccatgataaatatgtgtatgccaacgcacggcgcaacttttttccgccgagagtactgtttgactatagtgattatgagcgctgcctgacgccatcagatcttttaggtcagggtgtcaaccactggttccagcagttaatgattttaggcgagcgtccgttgcagatgctcccacttggacgggctgcagtgtcggagcggctggggggtcgtccacagagcgacctgtcggcagtataagtaatttctcccaaatacgcagctccttctccccttggtctctaaagctgtcttagcgactttatttcattggagtttagtcagggagtgtaactcgcagtactagacgcgagcctgcgtataagccatcaaactggagagctagctaagggcatctagcgacgcagccattcatctgttccacctcttctggagctaaacaaatattgatccgaacggccctggagactcctactgcgttttttagcttaattgctcgctgtgtgtaacccaattaaatattcagaatacaaccctgtcgacaatgaatcgaccagtaaattcgtaaaaggggatgggatgacgtacctggtcgcttatatagtctccttgccggcttcacggctctctccatctccgttcttaatatcgggtatcggggggccggctgtagagtagacgtgcagagaggcagtgagatgatcatgagaggtagtgtgcaatctagggcctacccgcaccttttgctagtgctaattatgacaacgaaaatggcgacaaaagatctgtggcaggggcctcaaagcggaagcggctagtgaaatctacgactgtgccattataagtcaaactcctcgagcctttagtaacacgtaacaatcattcgggaattccagacgctccatcctgtcttatctttttgagcatatcgctgcctaatacgaatacgtcgtgaatgtcgttg'
-  //return prompt('Wprowadź DNA')
+  // return prompt('Wprowadź DNA')
 }
 
 function makePretty (input) {
-  let upperCase = input.toUpperCase()
+  const upperCase = input.toUpperCase()
 
-  let tryglet = []
+  const tryglet = []
   for (let i = 0; i < upperCase.length; i += 3) {
     tryglet.push(upperCase.substring(i, i + 3))
   }
@@ -19,7 +19,7 @@ function makePretty (input) {
 }
 
 function findATGIndexes (tryglet) {
-  let atgColor = []
+  const atgColor = []
 
   for (let i = 0; i < tryglet.length; i++) {
     if (tryglet[i] === 'ATG') {
@@ -31,7 +31,7 @@ function findATGIndexes (tryglet) {
 }
 
 function markCodon (tryglet) {
-  let indexes = []
+  const indexes = []
 
   for (let i = 0; i < tryglet.length; i++) {
     const colorString = ['TAA', 'TAG', 'TGA']
@@ -47,8 +47,8 @@ function markCodon (tryglet) {
 }
 
 function drawPretty (tryglet) {
-  let atgIndexes = findATGIndexes(tryglet)
-  let indexesOfCodons = markCodon(tryglet)
+  const atgIndexes = findATGIndexes(tryglet)
+  const indexesOfCodons = markCodon(tryglet)
 
   for (let i = 0; i < tryglet.length; i++) {
     if (i === indexesOfCodons[0]) {
@@ -90,8 +90,8 @@ function getNicKomp (input) {
 }
 
 function drawNicKomp (input) {
-  let nicKomp = getNicKomp(input)
-  let trygletNiciKomp = makePretty(nicKomp)
+  const nicKomp = getNicKomp(input)
+  const trygletNiciKomp = makePretty(nicKomp)
 
   for (let i = 0; i < trygletNiciKomp.length; i++) {
     document.write(trygletNiciKomp[i] + '&nbsp;')
@@ -108,7 +108,7 @@ function pushToArr (arr, codonName) {
 }
 
 function getColor () {
-  let color = ['', '', '']
+  const color = ['', '', '']
   color[0] = Math.floor(Math.random() * 256).toString(16)
   color[1] = Math.floor(Math.random() * 256).toString(16)
   color[2] = Math.floor(Math.random() * 256).toString(16)
@@ -123,7 +123,7 @@ function getColor () {
 }
 
 function drawStats (tryglet) {
-  let mapCodons = {}
+  const mapCodons = {}
   let codonNames = []
   tryglet.forEach(e => {
     mapCodons[e] = mapCodons[e] ? mapCodons[e] + 1 : pushToArr(codonNames, e)
@@ -147,22 +147,22 @@ function drawStats (tryglet) {
       }
     })
     document.write(
-      `<span style=\"background-color: #${strColor};\">` +
+      `<span style="background-color: #${strColor}; display: inline-block; width: 100px; text-align: center">` +
         str +
         ' - ' +
         mapCodons[str] +
         '</span><br>'
     )
-    codonNames = codonNames.filter(name => name != str)
+    codonNames = codonNames.filter(name => name !== str)
   }
 }
 
 function drawStats2 (tryglet) {
-  let array = []
+  const array = []
   for (let i = 0; i < tryglet.length; i++) {
     let index = -1
     for (let j = 0; j < array.length; j++) {
-      if (array[j].name == tryglet[i]) {
+      if (array[j].name === tryglet[i]) {
         index = j
         break
       }

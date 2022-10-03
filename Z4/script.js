@@ -262,7 +262,21 @@ function generateBtnOnClick () {
   }
 }
 
+function addPattern () {
+  const pattern = document.createElement('div')
+  pattern.className = 'pattern'
+  const container = document.createElement('div')
+  container.className = 'container'
+  const patternInner = document.createElement('div')
+  patternInner.className = 'pattern-inner'
+
+  container.appendChild(patternInner)
+  pattern.appendChild(container)
+  document.body.appendChild(pattern)
+}
+
 function drawForm () {
+  addPattern()
   const mainDiv = document.createElement('div')
   mainDiv.className = 'main'
   const text = ['Height', 'Width', 'Mines']
