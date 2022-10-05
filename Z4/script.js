@@ -36,6 +36,12 @@ function generateBombs (game, reservedX, reservedY) {
   return arr
 }
 
+function bombsLeftInfo (game, x) {
+  const mineNumDiv = document.getElementById('mineNum')
+  game.bombsLeft += x
+  mineNumDiv.innerText = `Bombs: ${game.bombsLeft}`
+}
+
 function searchBlank (game, x, y) {
   const toCheck = []
   let row = x
@@ -50,6 +56,9 @@ function searchBlank (game, x, y) {
         const td = document.getElementById(`row${i}col${j}`)
 
         if (td.classList.contains('unclicked')) {
+          if (td.classList.contains('flag1')) {
+            bombsLeftInfo(game, 1)
+          }
           td.className = ''
           td.classList.add('clicked')
 
@@ -161,7 +170,6 @@ function drawGame (game) {
 
           game.startTime = Date.now()
           const timer = setInterval(function () {
-            console.log(started)
             if (!started) {
               clearInterval(timer)
             } else {
@@ -189,15 +197,13 @@ function drawGame (game) {
         e.preventDefault()
         if (this.classList.contains('flag0')) {
           this.classList.replace('flag0', 'flag1')
-          game.bombsLeft -= 1
-          mineNumDiv.innerText = `Bombs: ${game.bombsLeft}`
+          bombsLeftInfo(game, -1)
           if (game.bombsLeft === 0) {
             checkWin(game)
           }
         } else if (this.classList.contains('flag1')) {
           this.classList.replace('flag1', 'flag2')
-          game.bombsLeft += 1
-          mineNumDiv.innerText = `Bombs: ${game.bombsLeft}`
+          bombsLeftInfo(game, 1)
         } else {
           this.classList.replace('flag2', 'flag0')
         }
@@ -231,13 +237,13 @@ function generateBtnOnClick () {
   const checkMines = isNaN(mines)
 
   if (!checkWidth && !checkHeight && !checkMines) {
-    if (width > 1 && height > 1 && mines > 0 && mines <= width * height - 1) {
+    if (width > 1 && width <= 200 && height > 1 && height <= 200 && mines > 0 && mines <= width * height - 1) {
       const table = document.getElementsByClassName('saper')[0]
       if (table) document.body.removeChild(table)
       const game = {
-        arr: generateGameArray(width, height),
-        rows: width,
-        cols: height,
+        arr: generateGameArray(height, width),
+        rows: height,
+        cols: width,
         numBombs: mines,
         bombsLeft: mines,
         startTime: 0
@@ -252,6 +258,10 @@ function generateBtnOnClick () {
       window.alert('Too little mines')
     } else if (mines > width * height - 1) {
       window.alert('Too much mines')
+    } else if (width > 200) {
+      window.alert('Width is to big')
+    } else if (height > 200) {
+      window.alert('Height is too big')
     }
   } else if (checkWidth) {
     window.alert('Invalid width')

@@ -9,8 +9,8 @@ table {
 }
 
 table tr td {
-    width: 20px;
-    height: 20px;
+    width: 25px;
+    height: 25px;
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
