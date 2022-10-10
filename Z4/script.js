@@ -89,19 +89,48 @@ function searchBlank (game, x, y) {
   } while (!exit)
 }
 
-function endGameBox (win) {
+function cookies (game) {
+  const size = `${game.rows}x${game.cols}`
+  const delta = Date.now() - game.startTime
+  const nick = window.prompt('Podaj swój nick:')
+  const decodedCookie = decodeURIComponent(document.cookie).split('; ')
+  let nicksTimes = []
+  for (let i = 0; i < decodedCookie.length; i++) {
+    const key = decodedCookie[i].split('=')[0]
+    if (key === size) {
+      const temp = decodedCookie[i].split('=')[1]
+      nicksTimes = temp.split(',')
+      break
+    }
+  }
+
+  let pushed = false
+  for (let i = 0; i < nicksTimes.length; i++) {
+    if (delta < parseInt(nicksTimes[i].split(':')[1])) {
+      nicksTimes.splice(i, 0, `${nick}:${delta}`)
+      pushed = true
+      break
+    }
+  }
+
+  if (nicksTimes.length >= 10) {
+    nicksTimes.length = 10
+  } else if (!pushed) {
+    nicksTimes.push(`${nick}:${delta}`)
+  }
+
+  const cookie = `${size}=${nicksTimes.join(',')}`
+  document.cookie = cookie
+}
+
+function endGameBox (game, win) {
   const div = document.createElement('div')
   if (win === true) {
     div.classList.add('end-game-box')
     div.classList.add('win')
     div.innerText = '(: You win! Bravo! :)'
 
-    let highScore = JSON.parse(window.localStorage.getItem('highScore'))
-    if (!highScore) {
-      highScore = []
-    }
-    highScore.push(100)
-    window.localStorage.setItem('highScore', JSON.stringify(highScore))
+    cookies(game)
   } else {
     div.classList.add('end-game-box')
     div.classList.add('defeat')
@@ -125,7 +154,7 @@ function gameOver (game, win) {
     }
   }
 
-  endGameBox(win)
+  endGameBox(game, win)
 }
 
 function checkWin (game) {
@@ -180,6 +209,9 @@ function drawGame (game) {
           }, 1000)
         }
         if (this.classList.contains('unclicked')) {
+          if (td.classList.contains('flag1')) {
+            bombsLeftInfo(game, 1)
+          }
           this.className = ''
           this.classList.add('clicked')
 
