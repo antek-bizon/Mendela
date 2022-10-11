@@ -89,20 +89,60 @@ function searchBlank (game, x, y) {
   } while (!exit)
 }
 
-function cookies (game) {
-  const size = `${game.rows}x${game.cols}`
-  const delta = Date.now() - game.startTime
-  const nick = window.prompt('Podaj swój nick:')
-  const decodedCookie = decodeURIComponent(document.cookie).split('; ')
+function splitResults (decodedCookie, cookieName) {
   let nicksTimes = []
   for (let i = 0; i < decodedCookie.length; i++) {
     const key = decodedCookie[i].split('=')[0]
-    if (key === size) {
+    if (key === cookieName) {
       const temp = decodedCookie[i].split('=')[1]
       nicksTimes = temp.split(',')
       break
     }
   }
+  return nicksTimes
+}
+
+function drawRanking (cookieName) {
+  let tab = document.getElementsByClassName('ranking')[0]
+  if (tab) {
+    document.getElementsByClassName('main')[0].removeChild(tab)
+  }
+
+  tab = document.createElement('table')
+  tab.className = 'ranking'
+
+  const decodedCookie = decodeURIComponent(document.cookie).split('; ')
+  const nicksTimes = splitResults(decodedCookie, cookieName)
+
+  if (nicksTimes.length < 1) return
+
+  for (let i = 0; i < nicksTimes.length; i++) {
+    const tr = document.createElement('tr')
+    const td0 = document.createElement('td')
+    const td1 = document.createElement('td')
+    const td2 = document.createElement('td')
+
+    td0.innerText = `${i + 1}.`
+    tr.append(td0)
+    td1.innerText = nicksTimes[i].split(':')[0]
+    tr.append(td1)
+    const minutes = Math.floor(parseInt(nicksTimes[i].split(':')[1]) / 60000)
+    const seconds = Math.floor((parseInt(nicksTimes[i].split(':')[1]) % 60000) / 1000)
+    td2.innerText = minutes + ':' + seconds
+    tr.append(td2)
+    tab.append(tr)
+  }
+
+  const main = document.getElementsByClassName('main')[0]
+  main.append(tab)
+}
+
+function cookies (game) {
+  const cookieName = `${game.rows}x${game.cols}x${game.numBombs}`
+  const delta = Date.now() - game.startTime
+  const nick = window.prompt('Podaj swój nick:')
+  const decodedCookie = decodeURIComponent(document.cookie).split('; ')
+  const nicksTimes = splitResults(decodedCookie, cookieName)
 
   let pushed = false
   for (let i = 0; i < nicksTimes.length; i++) {
@@ -119,8 +159,9 @@ function cookies (game) {
     nicksTimes.push(`${nick}:${delta}`)
   }
 
-  const cookie = `${size}=${nicksTimes.join(',')}`
+  const cookie = `${cookieName}=${nicksTimes.join(',')}`
   document.cookie = cookie
+  drawRanking(cookieName)
 }
 
 function endGameBox (game, win) {
@@ -282,6 +323,8 @@ function generateBtnOnClick () {
       }
       started = false
       drawGame(game)
+      const cookieName = `${game.rows}x${game.cols}x${game.numBombs}`
+      drawRanking(cookieName)
     } else if (width <= 1) {
       window.alert('Width is too small')
     } else if (height <= 1) {
