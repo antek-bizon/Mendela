@@ -1,0 +1,66 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.main {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+table {
+    border: 1px solid black;
+    background-image: url("./img/ground.png");
+    background-repeat: repeat;
+    border-spacing: 0px;
+}
+
+table tr td {
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    background-size: cover;
+}
+
+.snake-head {
+    background-image: url("./img/head.png");
+}
+
+.snake-tail {
+    background-image: url("./img/tail.png");
+}
+
+.snake-straight {
+    background-image: url("./img/straight.png");
+}
+
+.snake-rounded {
+    background-image: url("./img/rounded.png");
+}
+
+.apple {
+    background-image: url("./img/apple.png");
+}
+
+.wall {
+    background-image: url("./img/wall.png");
+}
+
+.rot0 {
+    rotate: calc(0deg);
+}
+
+.rot90 {
+    rotate: calc(90deg);
+}
+
+.rot180 {
+    rotate: calc(180deg);
+}
+
+.rot270 {
+    rotate: calc(270deg);
+}
