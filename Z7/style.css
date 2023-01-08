@@ -1,0 +1,43 @@
+table {
+    border-collapse: collapse;
+    margin-bottom: 10px;
+}
+
+td {
+    text-align: center;
+    min-width: 70px;
+    min-height: 30px;
+    padding: 5px 10px;
+}
+
+#p1 {
+    background-color: lightblue;
+}
+
+#l1 {
+    background-color: lightcyan;
+}
+
+#p2 {
+    background-color: lightcoral;
+}
+
+#l2 {
+    background-color: lightsalmon;
+}
+
+#p3 {
+    background-color: lightgreen;
+}
+
+#l3 {
+    background-color: lightgray;
+}
+
+#p4 {
+    background-color: lightseagreen;
+}
+
+#l4 {
+    background-color: lightsteelblue;
+}

@@ -1,12 +1,24 @@
 const speedway = document.getElementById('speedway')
+const ctx = speedway.getContext('2d')
+
 const width = 700
 const height = 400
+const laps = 5
+const players = []
 let loop
 
 class Player {
   static angleSpeed = Math.PI * 0.05
+  laps = 0
+  turn = 0
+  inRace = true
 
-  constructor (posX, posY, color) {
+  speedVector = {
+    val: 7,
+    angle: Math.PI * 0.5
+  }
+
+  constructor (posX, posY, color, nr) {
     this.pos = {
       x: posX,
       y: posY
@@ -16,13 +28,6 @@ class Player {
       x: posX,
       y: posY
     }
-
-    this.speedVector = {
-      val: 7,
-      angle: 0
-    }
-
-    this.turn = 0
 
     this.color = {
       r: color.r,
@@ -58,6 +63,14 @@ class Player {
           break
       }
     }
+
+    this.nr = nr
+
+    document.getElementById(`p${nr}`)
+      .innerText = `Player ${nr}`
+
+    this.lapCounter = document.getElementById(`l${nr}`)
+    this.lapCounter.innerText = `Laps left: ${laps}`
   }
 
   move () {
@@ -74,16 +87,15 @@ class Player {
     this.pos.y += Math.cos(this.speedVector.angle) * this.speedVector.val
 
     if (this.isCollision()) {
-      clearInterval(loop)
-      window.alert('Game over')
+      this.inRace = false
     }
   }
 
   draw (ctx) {
     ctx.beginPath()
-    ctx.moveTo(player.lastPost.x, player.lastPost.y)
-    ctx.lineTo(player.pos.x, player.pos.y)
-    ctx.strokeStyle = `rgb(${player.color.r}, ${player.color.g}, ${player.color.b})`
+    ctx.moveTo(this.lastPost.x, this.lastPost.y)
+    ctx.lineTo(this.pos.x, this.pos.y)
+    ctx.strokeStyle = `rgb(${this.color.r}, ${this.color.g}, ${this.color.b})`
     ctx.stroke()
     ctx.closePath()
   }
@@ -122,8 +134,69 @@ class Player {
     }
   }
 
+  checkLap () {
+    const pointX = width / 2
+    const pointY = height / 2
+    const lapCase = this.laps % 4
+
+    switch (lapCase) {
+      case 0:
+        if (this.pos.y > pointY) {
+          break
+        }
+
+        if (this.pos.x < pointX) {
+          this.laps -= 1
+        } else {
+          this.laps += 1
+        }
+        break
+      case 1:
+        if (this.pos.x > pointX) {
+          break
+        }
+
+        if (this.pos.y > pointY) {
+          this.laps -= 1
+          this.lapCounter.innerText = `Laps left: ${laps - (this.laps / 4)}`
+        } else {
+          this.laps += 1
+        }
+        break
+      case 2:
+        if (this.pos.y < pointY) {
+          break
+        }
+
+        if (this.pos.x > pointX) {
+          this.laps -= 1
+        } else {
+          this.laps += 1
+        }
+        break
+      case 3:
+        if (this.pos.x < pointX) {
+          break
+        }
+
+        if (this.pos.y < pointY) {
+          this.laps -= 1
+        } else {
+          this.laps += 1
+          this.lapCounter.innerText = `Laps left: ${laps - (this.laps / 4)}`
+        }
+        break
+    }
+
+    if (laps - (this.laps / 4) <= 0) {
+      clearInterval(loop)
+      window.alert(`Player ${this.nr} wins`)
+    }
+  }
+
   mainLoop (ctx) {
     this.move()
+    this.checkLap()
     this.draw(ctx)
   }
 }
@@ -187,16 +260,33 @@ function initGame (ctx) {
   drawRoad(ctx, false)
 }
 
-const player = new Player(100, height / 2, { r: 100, g: 200, b: 150 })
-
-if (speedway.getContext) {
-  const ctx = speedway.getContext('2d')
-
-  initGame(ctx)
+function startGame () {
+  if (players.length < 1) {
+    window.alert('Select players')
+    return
+  }
 
   loop = setInterval(() => {
-    // Draw
-    player.mainLoop(ctx)
+    players.forEach((e) => { e.mainLoop(ctx) })
+    for (let i = 0; i < players.length; i++) {
+      if (!players[i].inRace) {
+        players.splice(i, 1)
+        i--
+      }
+    }
+    if (players.length === 1) {
+      window.alert(`Player ${players[0].nr} wins`)
+      clearInterval(loop)
+    }
     drawRoad(ctx, true)
   }, 50)
+}
+
+function addPlayer (nr) {
+  players.push(new Player(width / 2 - 10, height * 0.75, { r: 100, g: 200, b: 150 }, nr))
+}
+
+if (speedway.getContext) {
+  speedway.onclick = startGame
+  initGame(ctx)
 }
