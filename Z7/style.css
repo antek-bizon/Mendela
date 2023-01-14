@@ -1,6 +1,17 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+img {
+    display: none;
+}
+
 table {
     border-collapse: collapse;
-    margin-bottom: 10px;
+    margin: 10px auto;
+    border: 1px solid black;
 }
 
 td {
@@ -40,4 +51,42 @@ td {
 
 #l4 {
     background-color: lightsteelblue;
+}
+
+td div {
+    width: 100%;
+    text-align: center;
+    padding: 5px;
+    background-color: pink;
+    border-radius: 30px;
+    transition: 300ms;
+}
+
+td div::selection, td div::-moz-selection {
+    background-color: transparent;
+}
+
+td div:hover {
+    background-color: hotpink;
+}
+
+.pressed {
+    background-color: blueviolet !important;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.relative {
+    position: relative;
+    width: 100%;
+}
+
+.absolute {
+    position: absolute;
+    left: calc(50% - 500px);
 }

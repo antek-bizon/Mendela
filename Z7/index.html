@@ -11,18 +11,42 @@
 <body>
     <table>
         <tr>
+            <td>Players</td>
             <td id="p1" onclick="addPlayer(1)"></td>
             <td id="p2" onclick="addPlayer(2)"></td>
             <td id="p3" onclick="addPlayer(3)"></td>
             <td id="p4" onclick="addPlayer(4)"></td>
         </tr>
         <tr>
+            <td>Laps left</td>
             <td id="l1" onclick="addPlayer(1)"></td>
             <td id="l2" onclick="addPlayer(2)"></td>
             <td id="l3" onclick="addPlayer(3)"></td>
             <td id="l4" onclick="addPlayer(4)"></td>
         </tr>
+        <tr id="left-control">
+            <td>Left key</td>
+            <td id="cl1" onclick="changeControls(1, this)"></td>
+            <td id="cl2" onclick="changeControls(2, this)"></td>
+            <td id="cl3" onclick="changeControls(3, this)"></td>
+            <td id="cl4" onclick="changeControls(4, this)"></td>
+        </tr>
+        <tr id="right-control">
+            <td>Right key</td>
+            <td id="cr1" onclick="changeControls(-1, this)"></td>
+            <td id="cr2" onclick="changeControls(-2, this)"></td>
+            <td id="cr3" onclick="changeControls(-3, this)"></td>
+            <td id="cr4" onclick="changeControls(-4, this)"></td>
+        </tr>
     </table>
-    <canvas width="700" height="400" id="speedway"></canvas>
+    <div class="relative">
+        <canvas class="absolute" id="speedway"></canvas>
+        <canvas class="absolute" id="player-canvas"></canvas>
+    </div>
+
+    <img src="./img/blue.png" alt="blue">
+    <img src="./img/red.png" alt="red">
+    <img src="./img/purple.png" alt="purple">
+    <img src="./img/green.png" alt="green">
 </body>
 </html>
