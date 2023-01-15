@@ -2,7 +2,7 @@ const width = Math.min(window.innerWidth, 1000)
 const height = width * (400 / 700)
 const laps = 5
 const players = []
-const imgs = document.querySelectorAll('img')
+// const imgs = document.querySelectorAll('img')
 const imgWidth = 50
 const imgHeight = 30
 const speedway = document.getElementById('speedway')
@@ -22,6 +22,7 @@ class Player {
   laps = 0
   turn = 0
   inRace = true
+  image = new Image(imgWidth, imgHeight)
 
   speedVector = {
     val: 7,
@@ -50,18 +51,22 @@ class Player {
       case 1:
         this.keyLeft = 'KeyA'
         this.keyRight = 'KeyD'
+        this.image.src = './img/green.png'
         break
       case 2:
         this.keyLeft = 'ArrowLeft'
         this.keyRight = 'ArrowRight'
+        this.image.src = './img/red.png'
         break
       case 3:
         this.keyLeft = 'KeyJ'
         this.keyRight = 'KeyL'
+        this.image.src = './img/purple.png'
         break
       case 4:
         this.keyLeft = 'Numpad4'
         this.keyRight = 'Numpad6'
+        this.image.src = './img/blue.png'
         break
     }
 
@@ -159,10 +164,13 @@ class Player {
     ctx.strokeStyle = `rgb(${this.color.r}, ${this.color.g}, ${this.color.b})`
     ctx.stroke()
     ctx.closePath()
-    playerCtx.clearRect(0, 0, playerCanvas.width, playerCanvas.height)
-    playerCtx.setTransform(1, 0, 0, 1, 0, 0)
-    playerCtx.rotate(this.angle)
-    playerCtx.drawImage(imgs[this.nr], this.pos.x, this.pos.y, imgWidth, imgHeight)
+    playerCtx.save()
+    playerCtx.translate(this.pos.x, this.pos.y)
+    playerCtx.rotate(-this.speedVector.angle + Math.PI / 2)
+    playerCtx.translate(0, 0)
+    playerCtx.drawImage(this.image, imgWidth / -2, imgHeight / -2, imgWidth, imgHeight)
+    console.log(this.nr, ":", this.image)
+    playerCtx.restore()
   }
 
   isCollision () {
@@ -333,6 +341,7 @@ function startGame () {
   }
 
   loop = setInterval(() => {
+    playerCtx.clearRect(0, 0, playerCanvas.width, playerCanvas.height)
     players.forEach((e) => { e.mainLoop(ctx) })
     for (let i = 0; i < players.length; i++) {
       if (!players[i].inRace) {
