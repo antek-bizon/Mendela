@@ -14,10 +14,10 @@ table {
     border: 1px solid black;
 }
 
-td {
+td, th {
     text-align: center;
     min-width: 70px;
-    min-height: 30px;
+    min-height: 35px;
     padding: 5px 10px;
 }
 
@@ -56,7 +56,7 @@ td {
 td div {
     width: 100%;
     text-align: center;
-    padding: 5px;
+    padding: 3px 5px;
     background-color: pink;
     border-radius: 30px;
     transition: 300ms;
@@ -89,4 +89,21 @@ body {
 .absolute {
     position: absolute;
     left: calc(50% - 500px);
+}
+
+dialog {
+    position: absolute;
+    bottom: 50%;
+    width: 300px;
+    left: calc(50% - 150px);
+    text-align: center;
+}
+
+dialog * {
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+dialog button {
+    padding: 5px 10px;
 }

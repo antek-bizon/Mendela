@@ -5,43 +5,54 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="script.js" defer></script>
+    <script src="player.js" type="module"></script>
+    <script src="script.js" type="module" defer></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <table>
         <tr>
-            <td>Players</td>
-            <td id="p1" onclick="addPlayer(1)"></td>
-            <td id="p2" onclick="addPlayer(2)"></td>
-            <td id="p3" onclick="addPlayer(3)"></td>
-            <td id="p4" onclick="addPlayer(4)"></td>
+            <th colspan="5">Click below to add players</th>
+        </tr>
+        <tr>
+            <td>Player</td>
+            <td id="p1"></td>
+            <td id="p2"></td>
+            <td id="p3"></td>
+            <td id="p4"></td>
         </tr>
         <tr>
             <td>Laps left</td>
-            <td id="l1" onclick="addPlayer(1)"></td>
-            <td id="l2" onclick="addPlayer(2)"></td>
-            <td id="l3" onclick="addPlayer(3)"></td>
-            <td id="l4" onclick="addPlayer(4)"></td>
+            <td id="l1"></td>
+            <td id="l2"></td>
+            <td id="l3"></td>
+            <td id="l4"></td>
         </tr>
         <tr id="left-control">
             <td>Left key</td>
-            <td id="cl1" onclick="changeControls(1, this)"></td>
-            <td id="cl2" onclick="changeControls(2, this)"></td>
-            <td id="cl3" onclick="changeControls(3, this)"></td>
-            <td id="cl4" onclick="changeControls(4, this)"></td>
+            <td id="cl1"></td>
+            <td id="cl2"></td>
+            <td id="cl3"></td>
+            <td id="cl4"></td>
         </tr>
         <tr id="right-control">
             <td>Right key</td>
-            <td id="cr1" onclick="changeControls(-1, this)"></td>
-            <td id="cr2" onclick="changeControls(-2, this)"></td>
-            <td id="cr3" onclick="changeControls(-3, this)"></td>
-            <td id="cr4" onclick="changeControls(-4, this)"></td>
+            <td id="cr1"></td>
+            <td id="cr2"></td>
+            <td id="cr3"></td>
+            <td id="cr4"></td>
+        </tr>
+        <tr>
+            <th colspan="5">Click on canvas to start</th>
         </tr>
     </table>
     <div class="relative">
         <canvas class="absolute" id="speedway"></canvas>
-        <canvas class="absolute" id="player-canvas"></canvas>
     </div>
+    <dialog>
+        <h3>Game over</h3>
+        <p></p>
+        <button type="button">Restart</button>
+    </dialog>
 </body>
 </html>
