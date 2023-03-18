@@ -1,0 +1,15 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.cell {
+    width: 15px;
+    height: 15px;
+    border: 1px solid black;
+}
+
+.occupied {
+    background-color: violet;
+}
