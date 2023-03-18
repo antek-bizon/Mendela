@@ -1,9 +1,3 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 img {
     display: none;
 }
@@ -14,7 +8,8 @@ table {
     border: 1px solid black;
 }
 
-td, th {
+td,
+th {
     text-align: center;
     min-width: 70px;
     min-height: 35px;
@@ -62,7 +57,8 @@ td div {
     transition: 300ms;
 }
 
-td div::selection, td div::-moz-selection {
+td div::selection,
+td div::-moz-selection {
     background-color: transparent;
 }
 
