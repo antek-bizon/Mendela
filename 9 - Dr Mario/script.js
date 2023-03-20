@@ -10,80 +10,84 @@ var Rotation;
     Rotation[Rotation["DEG180"] = 2] = "DEG180";
     Rotation[Rotation["DEG270"] = 3] = "DEG270";
 })(Rotation || (Rotation = {}));
-var Vector2 = /** @class */ (function () {
-    function Vector2(x, y) {
+class Vector2 {
+    constructor(x, y) {
         this.x = x;
         this.y = y;
     }
-    Vector2.down = function () {
+    static down() {
         return new Vector2(0, 1);
-    };
-    Vector2.right = function () {
+    }
+    static right() {
         return new Vector2(1, 0);
-    };
-    Vector2.left = function () {
+    }
+    static left() {
         return new Vector2(-1, 0);
-    };
-    Vector2.addVec = function (vec1, vec2) {
+    }
+    static addVec(vec1, vec2) {
         return new Vector2(vec1.x + vec2.x, vec1.y + vec2.y);
-    };
-    Vector2.prototype.add = function (x, y) {
+    }
+    add(x, y) {
         this.x += x;
         this.y += y;
-    };
-    Vector2.prototype.addVec = function (vector) {
+    }
+    addVec(vector) {
         this.x += vector.x;
         this.y += vector.y;
-    };
-    Vector2.prototype.subtract = function (x, y) {
+    }
+    subtract(x, y) {
         this.x -= x;
         this.y -= y;
-    };
-    Vector2.prototype.outOfBoard = function () {
+    }
+    outOfBoard() {
         if (this.x < 0 || this.x >= Game.boardWidth) {
             return true;
         }
         return false;
-    };
-    return Vector2;
-}());
-var Game = /** @class */ (function () {
-    function Game(width, height) {
-        this.blocks = [];
+    }
+}
+var SegWithIdDesc;
+(function (SegWithIdDesc) {
+    SegWithIdDesc[SegWithIdDesc["SEGMENT"] = 0] = "SEGMENT";
+    SegWithIdDesc[SegWithIdDesc["ID"] = 1] = "ID";
+})(SegWithIdDesc || (SegWithIdDesc = {}));
+class Game {
+    constructor(width, height) {
+        this.blocks = new Map();
+        this.nextId = 1;
         Game.boardWidth = (typeof width !== 'undefined') ? width : 10;
         Game.boardHeight = (typeof height !== 'undefined') ? height : 20;
         console.log('Game start');
-        var _a = this.createBoard(Game.boardWidth, Game.boardHeight), board = _a[0], boardHTML = _a[1];
+        const [board, boardHTML] = this.createBoard(Game.boardWidth, Game.boardHeight);
         this.board = board;
         this.boardHTML = boardHTML;
         document.body.append(this.boardHTML);
         this.handleKeys();
         this.mainLoop();
     }
-    Game.prototype.handleKeys = function () {
-        var _this = this;
-        document.addEventListener('keydown', function (e) {
+    handleKeys() {
+        document.addEventListener('keydown', (e) => {
             switch (e.code) {
                 case 'KeyD':
-                    if (_this.canMove(_this.elementInControl, Vector2.right())) {
-                        _this.move(_this.elementInControl, Vector2.right());
+                    if (this.canMove(this.elementInControl, Vector2.right())) {
+                        this.move(this.elementInControl, Vector2.right());
                     }
                     break;
                 case 'KeyA':
-                    if (_this.canMove(_this.elementInControl, Vector2.left())) {
-                        _this.move(_this.elementInControl, Vector2.left());
+                    if (this.canMove(this.elementInControl, Vector2.left())) {
+                        this.move(this.elementInControl, Vector2.left());
                     }
                     break;
                 case 'KeyS':
-                    if (_this.canMove(_this.elementInControl, Vector2.down())) {
-                        _this.move(_this.elementInControl, Vector2.down());
+                    if (this.canMove(this.elementInControl, Vector2.down())) {
+                        this.move(this.elementInControl, Vector2.down());
                     }
                     break;
                 case 'KeyW':
-                    _this.rotate(_this.elementInControl);
+                    this.rotate(this.elementInControl);
                     break;
                 case 'KeyP':
-                    clearInterval(_this.loop);
+                    clearInterval(this.loop);
                     break;
             }
         });
@@ -96,63 +100,69 @@ var Game = /** @class */ (function () {
         //             break
         //     }
         // })
-    };
-    Game.prototype.createRow = function (width, rowNr) {
-        var row = new Array(width);
-        var rowHTML = document.createElement('tr');
-        for (var i = 0; i < width; i++) {
+    }
+    createRow(width, rowNr) {
+        const row = new Array(width);
+        const rowHTML = document.createElement('tr');
+        for (let i = 0; i < width; i++) {
             row[i] = 0;
-            var cell = document.createElement('td');
+            const cell = document.createElement('td');
             cell.classList.add('cell');
-            cell.id = "".concat(i, "_").concat(rowNr);
+            cell.id = `${i}_${rowNr}`;
             rowHTML.append(cell);
         }
         return [row, rowHTML];
-    };
-    Game.prototype.createBoard = function (width, height) {
-        var board = new Array(height);
-        var boardHTML = document.createElement('table');
-        for (var i = 0; i < height; i++) {
-            var _a = this.createRow(width, i), row = _a[0], rowHTML = _a[1];
+    }
+    createBoard(width, height) {
+        const board = new Array(height);
+        const boardHTML = document.createElement('table');
+        for (let i = 0; i < height; i++) {
+            const [row, rowHTML] = this.createRow(width, i);
             board[i] = (row);
             boardHTML.append(rowHTML);
         }
         return [board, boardHTML];
-    };
-    Game.prototype.randomColors = function () {
-        return ['red', 'blue'];
-    };
-    Game.prototype.spawnNewBlock = function () {
+    }
+    randomColor() {
+        const choice = Math.round(Math.random() * 1000) % 3;
+        switch (choice) {
+            case 0:
+                return 'blue';
+            case 1:
+                return 'red';
+            case 2:
+                return 'green';
+            default:
+                return 'violet'; // It signals something went wrong
+        }
+    }
+    spawnNewBlock() {
         console.log('spawning new block');
-        var segments = [
-            new Vector2(Game.boardWidth / 2, 0),
-            new Vector2(Game.boardWidth / 2 + 1, 0)
+        const segments = [
+            { position: new Vector2(Game.boardWidth / 2, 0), color: this.randomColor() },
+            { position: new Vector2(Game.boardWidth / 2 + 1, 0), color: this.randomColor() }
         ];
-        for (var _i = 0, segments_1 = segments; _i < segments_1.length; _i++) {
-            var segment = segments_1[_i];
-            if (this.isCellOccupied(segment, 0)) {
+        for (const segment of segments) {
+            if (this.isCellOccupied(segment.position, 0)) {
                 window.alert('game over');
                 clearInterval(this.loop);
                 return;
             }
         }
-        var colors = this.randomColors();
-        var id = (this.blocks.length === 0) ? 1 : this.blocks[this.blocks.length - 1].id + 1;
-        var block = { id: id, segments: segments, colors: colors, angle: Rotation.DEG0 };
+        const block = { id: this.nextId, segments, angle: Rotation.DEG0 };
         this.elementInControl = block;
-        this.blocks.push(block);
-        for (var i = 0; i < block.segments.length; i++) {
-            this.updateBoard(Update.ADD, block.id, block.segments[i].x, block.segments[i].y, block.colors[i]);
+        this.blocks.set(this.nextId++, block);
+        for (let i = 0; i < block.segments.length; i++) {
+            this.updateBoard(Update.ADD, block.id, block.segments[i].position.x, block.segments[i].position.y, block.segments[i].color);
         }
-    };
-    Game.prototype.isCellOccupied = function (nextPos, id) {
-        var isOccupied = (this.board[nextPos.y][nextPos.x] !== 0 && this.board[nextPos.y][nextPos.x] !== id);
+    }
+    isCellOccupied(nextPos, id) {
+        const isOccupied = (this.board[nextPos.y][nextPos.x] !== 0 && this.board[nextPos.y][nextPos.x] !== id);
         return isOccupied;
-    };
-    Game.prototype.canMove = function (e, vector) {
-        for (var _i = 0, _a = e.segments; _i < _a.length; _i++) {
-            var segment = _a[_i];
-            var nextPos = Vector2.addVec(segment, vector);
+    }
+    canMove(e, vector) {
+        for (const segment of e.segments) {
+            const nextPos = Vector2.addVec(segment.position, vector);
             if (nextPos.y >= Game.boardHeight) {
                 return false;
             }
@@ -164,69 +174,69 @@ var Game = /** @class */ (function () {
             }
         }
         return true;
-    };
-    Game.prototype.move = function (e, vector) {
-        for (var i = 0; i < e.segments.length; i++) {
-            this.updateBoard(Update.DELETE, e.id, e.segments[i].x, e.segments[i].y, e.colors[i]);
+    }
+    move(e, vector) {
+        for (let i = 0; i < e.segments.length; i++) {
+            this.updateBoard(Update.DELETE, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color);
         }
-        for (var i = 0; i < e.segments.length; i++) {
-            e.segments[i].addVec(vector);
-            this.updateBoard(Update.ADD, e.id, e.segments[i].x, e.segments[i].y, e.colors[i]);
+        for (let i = 0; i < e.segments.length; i++) {
+            e.segments[i].position.addVec(vector);
+            this.updateBoard(Update.ADD, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color);
         }
-    };
-    Game.prototype.rotate = function (e) {
-        for (var i = 0; i < e.segments.length; i++) {
-            this.updateBoard(Update.DELETE, e.id, e.segments[i].x, e.segments[i].y, e.colors[i]);
+    }
+    rotate(e) {
+        for (let i = 0; i < e.segments.length; i++) {
+            this.updateBoard(Update.DELETE, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color);
         }
         switch (e.angle) {
             case Rotation.DEG0:
                 e.angle += 1;
-                e.segments[0].add(0, -1);
-                e.segments[1].add(-1, 0);
+                e.segments[0].position.add(0, -1);
+                e.segments[1].position.add(-1, 0);
                 break;
             case Rotation.DEG90:
                 e.angle += 1;
-                e.segments[0].add(1, 1);
-                if (e.segments[0].outOfBoard() || this.isCellOccupied(e.segments[0], e.id)) {
-                    var vector = Vector2.left();
+                e.segments[0].position.add(1, 1);
+                if (e.segments[0].position.outOfBoard() || this.isCellOccupied(e.segments[0].position, e.id)) {
+                    const vector = Vector2.left();
                     if (this.canMove(e, vector)) {
-                        for (var i = 0; i < e.segments.length; i++) {
-                            e.segments[i].addVec(vector);
+                        for (let i = 0; i < e.segments.length; i++) {
+                            e.segments[i].position.addVec(vector);
                         }
                     }
                     else {
-                        e.segments[0].subtract(1, 1);
+                        e.segments[0].position.subtract(1, 1);
                     }
                 }
                 break;
             case Rotation.DEG180:
                 e.angle += 1;
-                e.segments[0].add(-1, 0);
-                e.segments[1].add(0, -1);
+                e.segments[0].position.add(-1, 0);
+                e.segments[1].position.add(0, -1);
                 break;
             case Rotation.DEG270:
                 e.angle = Rotation.DEG0;
-                e.segments[1].add(1, 1);
-                if (e.segments[1].outOfBoard() || this.isCellOccupied(e.segments[1], e.id)) {
-                    var vector = Vector2.left();
+                e.segments[1].position.add(1, 1);
+                if (e.segments[1].position.outOfBoard() || this.isCellOccupied(e.segments[1].position, e.id)) {
+                    const vector = Vector2.left();
                     if (this.canMove(e, vector)) {
-                        for (var i = 0; i < e.segments.length; i++) {
-                            e.segments[i].addVec(vector);
+                        for (let i = 0; i < e.segments.length; i++) {
+                            e.segments[i].position.addVec(vector);
                         }
                     }
                     else {
-                        e.segments[1].subtract(1, 1);
+                        e.segments[1].position.subtract(1, 1);
                     }
                 }
                 break;
             default:
                 console.error('Unknow rotation value');
         }
-        for (var i = 0; i < e.segments.length; i++) {
-            this.updateBoard(Update.ADD, e.id, e.segments[i].x, e.segments[i].y, e.colors[i]);
+        for (let i = 0; i < e.segments.length; i++) {
+            this.updateBoard(Update.ADD, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color);
         }
-    };
-    Game.prototype.updateBoard = function (operation, id, x, y, color) {
+    }
+    updateBoard(operation, id, x, y, color) {
         switch (operation) {
             case Update.ADD:
                 this.board[y][x] = id;
@@ -239,35 +249,148 @@ var Game = /** @class */ (function () {
             default:
                 console.error('Unknown update operation');
         }
-    };
-    Game.prototype.mainLoop = function () {
-        var _this = this;
+    }
+    eliminateToSmall(toDelete) {
+        for (let i = 0; i < toDelete.length; i++) {
+            if (toDelete[i].length < 4) {
+                toDelete[i].length = 0;
+            }
+        }
+    }
+    resetForNextCheck(toDelete, index) {
+        if (toDelete[index].length >= 4) {
+            toDelete.push([]);
+            index++;
+        }
+        else {
+            console.log('lenght =', toDelete[index].length, index);
+            toDelete.forEach((e) => {
+                e.forEach((_e) => {
+                    console.log(_e[0], _e[1]);
+                });
+            });
+            toDelete[index].length = 0;
+        }
+        return index;
+    }
+    checkRow(y) {
+        const toDelete = [];
+        toDelete.push([]);
+        let index = 0;
+        for (let i = 0; i < Game.boardWidth; i++) {
+            if (this.board[y][i] > 0) {
+                const block = this.blocks.get(this.board[y][i]);
+                if (typeof block === 'undefined')
+                    break;
+                const segIndex = (block.segments[0].position.x === i && block.segments[0].position.y === y) ? 0 : 1;
+                // console.log(i, y, block, segIndex)
+                if (toDelete[index].length > 0 && toDelete[index][0][SegWithIdDesc.SEGMENT].color !== block.segments[segIndex].color) {
+                    index = this.resetForNextCheck(toDelete, index);
+                }
+                toDelete[index].push([block.segments[segIndex], block.id]);
+            }
+            else {
+                index = this.resetForNextCheck(toDelete, index);
+            }
+        }
+        console.log('checkRow');
+        toDelete.forEach((e) => {
+            e.forEach((_e) => {
+                console.log(_e[0], _e[1]);
+            });
+        });
+        this.eliminateToSmall(toDelete);
+        // console.log(toDelete)
+        return toDelete;
+    }
+    checkColumn(x) {
+        const toDelete = [];
+        toDelete.push([]);
+        let index = 0;
+        for (let i = 0; i < Game.boardHeight; i++) {
+            if (this.board[i][x] > 0) {
+                const block = this.blocks.get(this.board[i][x]);
+                if (typeof block === 'undefined')
+                    break;
+                const segIndex = (block.segments[0].position.x === x && block.segments[0].position.y === i) ? 0 : 1;
+                if (toDelete[index].length > 0 && toDelete[index][0][SegWithIdDesc.SEGMENT].color !== block.segments[segIndex].color) {
+                    index = this.resetForNextCheck(toDelete, index);
+                }
+                toDelete[index].push([block.segments[segIndex], block.id]);
+            }
+            else {
+                index = this.resetForNextCheck(toDelete, index);
+            }
+        }
+        // console.log('checkColumn')
+        // toDelete.forEach((e) => {
+        //   e.forEach((_e) => {
+        //     console.log(_e[0], _e[1])
+        //   })
+        // })
+        this.eliminateToSmall(toDelete);
+        return toDelete;
+    }
+    tryToDestroy() {
+        const toDeleteMap = new Map();
+        for (const segment of this.elementInControl.segments) {
+            for (const row of this.checkRow(segment.position.y)) {
+                for (const item of row) {
+                    toDeleteMap.set(item[SegWithIdDesc.SEGMENT], item[SegWithIdDesc.ID]);
+                }
+            }
+            for (const column of this.checkColumn(segment.position.x)) {
+                for (const item of column) {
+                    toDeleteMap.set(item[SegWithIdDesc.SEGMENT], item[SegWithIdDesc.ID]);
+                }
+            }
+        }
+        console.log(toDeleteMap);
+        toDeleteMap.forEach((v, k) => {
+            const block = this.blocks.get(v);
+            if (typeof block !== 'undefined') {
+                const segIndex = (block.segments[0].position.x === k.position.x && block.segments[0].position.y === k.position.y) ? 0 : 1;
+                this.updateBoard(Update.DELETE, block.id, block.segments[segIndex].position.x, block.segments[segIndex].position.y, block.segments[segIndex].color);
+                block.segments.splice(segIndex, 1);
+            }
+        });
+    }
+    mainLoop() {
         if (this.loop != null) {
             clearInterval(this.loop);
         }
         if (this.elementInControl == null) {
             this.spawnNewBlock();
         }
-        this.loop = setInterval(function () {
-            if (_this.blocks.length > 100) {
-                clearInterval(_this.loop);
+        this.loop = setInterval(() => {
+            if (this.blocks.size > 100) {
+                clearInterval(this.loop);
             }
-            var blockAdded = false;
-            for (var i = 0; i < _this.blocks.length; i++) {
-                var blockToMove = _this.blocks[i];
-                if (_this.canMove(blockToMove, Vector2.down())) {
-                    _this.move(blockToMove, Vector2.down());
+            let blockAdded = false;
+            const keys = this.blocks.keys();
+            for (const key of keys) {
+                const blockToMove = this.blocks.get(key);
+                if (typeof blockToMove === 'undefined')
+                    break;
+                if (blockToMove.segments.length === 0) {
+                    this.blocks.delete(key);
+                    break;
+                }
+                if (this.canMove(blockToMove, Vector2.down())) {
+                    this.move(blockToMove, Vector2.down());
                 }
                 else {
-                    if (blockToMove.id === _this.elementInControl.id && !blockAdded) {
-                        _this.spawnNewBlock();
+                    if (blockToMove.id === this.elementInControl.id && !blockAdded) {
+                        this.tryToDestroy();
+                        this.spawnNewBlock();
                         blockAdded = true;
                     }
                 }
             }
         }, 500);
-    };
-    return Game;
-}());
-var game = new Game();
+    }
+}
+const game = new Game();
 game.mainLoop();
+// Reasumując kwintesencje tematu, dochodzę do fundamentalnej konkluzji:
+// Walić OOP, najgorsze ścierwo

@@ -13,7 +13,7 @@ enum Rotation {
 class Vector2 {
   x: number
   y: number
-  constructor (x, y) {
+  constructor (x: number, y: number) {
     this.x = x
     this.y = y
   }
@@ -58,21 +58,33 @@ class Vector2 {
   }
 }
 
+interface Segment {
+  position: Vector2
+  color: string
+}
+
 interface Block {
   id: number
-  segments: Vector2[]
-  colors: string[]
+  segments: Segment[]
   angle: Rotation
 }
+
+enum SegWithIdDesc {
+  SEGMENT = 0,
+  ID = 1
+}
+
+type SegWithId = [Segment, number]
 
 class Game {
   static boardWidth
   static boardHeight
   private readonly board: number[]
   private readonly boardHTML: HTMLTableElement
-  private readonly blocks: Block[] = []
+  private readonly blocks: Map<number, Block> = new Map()
   private elementInControl: Block
   private loop: number
+  private nextId = 1
 
   constructor (width?: number, height?: number) {
     Game.boardWidth = (typeof width !== 'undefined') ? width : 10
@@ -151,30 +163,38 @@ class Game {
     return [board, boardHTML]
   }
 
-  private randomColors (): string[] {
-    return ['red', 'blue']
+  private randomColor (): string {
+    const choice = Math.round(Math.random() * 1000) % 3
+    switch (choice) {
+      case 0:
+        return 'blue'
+      case 1:
+        return 'red'
+      case 2:
+        return 'green'
+      default:
+        return 'violet' // It signals something went wrong
+    }
   }
 
   private spawnNewBlock (): void {
     console.log('spawning new block')
-    const segments: Vector2[] = [
-      new Vector2(Game.boardWidth / 2, 0),
-      new Vector2(Game.boardWidth / 2 + 1, 0)
+    const segments: Segment[] = [
+      { position: new Vector2(Game.boardWidth / 2, 0), color: this.randomColor() },
+      { position: new Vector2(Game.boardWidth / 2 + 1, 0), color: this.randomColor() }
     ]
     for (const segment of segments) {
-      if (this.isCellOccupied(segment, 0)) {
+      if (this.isCellOccupied(segment.position, 0)) {
         window.alert('game over')
         clearInterval(this.loop)
         return
       }
     }
-    const colors = this.randomColors()
-    const id = (this.blocks.length === 0) ? 1 : this.blocks[this.blocks.length - 1].id + 1
-    const block: Block = { id, segments, colors, angle: Rotation.DEG0 }
+    const block: Block = { id: this.nextId, segments, angle: Rotation.DEG0 }
     this.elementInControl = block
-    this.blocks.push(block)
+    this.blocks.set(this.nextId++, block)
     for (let i = 0; i < block.segments.length; i++) {
-      this.updateBoard(Update.ADD, block.id, block.segments[i].x, block.segments[i].y, block.colors[i])
+      this.updateBoard(Update.ADD, block.id, block.segments[i].position.x, block.segments[i].position.y, block.segments[i].color)
     }
   }
 
@@ -185,7 +205,7 @@ class Game {
 
   private canMove (e: Block, vector: Vector2): boolean {
     for (const segment of e.segments) {
-      const nextPos = Vector2.addVec(segment, vector)
+      const nextPos = Vector2.addVec(segment.position, vector)
       if (nextPos.y >= Game.boardHeight) {
         return false
       }
@@ -204,57 +224,57 @@ class Game {
 
   private move (e: Block, vector: Vector2): void {
     for (let i = 0; i < e.segments.length; i++) {
-      this.updateBoard(Update.DELETE, e.id, e.segments[i].x, e.segments[i].y, e.colors[i])
+      this.updateBoard(Update.DELETE, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color)
     }
 
     for (let i = 0; i < e.segments.length; i++) {
-      e.segments[i].addVec(vector)
-      this.updateBoard(Update.ADD, e.id, e.segments[i].x, e.segments[i].y, e.colors[i])
+      e.segments[i].position.addVec(vector)
+      this.updateBoard(Update.ADD, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color)
     }
   }
 
   private rotate (e: Block): void {
     for (let i = 0; i < e.segments.length; i++) {
-      this.updateBoard(Update.DELETE, e.id, e.segments[i].x, e.segments[i].y, e.colors[i])
+      this.updateBoard(Update.DELETE, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color)
     }
 
     switch (e.angle) {
       case Rotation.DEG0:
         e.angle += 1
-        e.segments[0].add(0, -1)
-        e.segments[1].add(-1, 0)
+        e.segments[0].position.add(0, -1)
+        e.segments[1].position.add(-1, 0)
         break
       case Rotation.DEG90:
         e.angle += 1
-        e.segments[0].add(1, 1)
-        if (e.segments[0].outOfBoard() || this.isCellOccupied(e.segments[0], e.id)) {
+        e.segments[0].position.add(1, 1)
+        if (e.segments[0].position.outOfBoard() || this.isCellOccupied(e.segments[0].position, e.id)) {
           const vector = Vector2.left()
           if (this.canMove(e, vector)) {
             for (let i = 0; i < e.segments.length; i++) {
-              e.segments[i].addVec(vector)
+              e.segments[i].position.addVec(vector)
             }
           } else {
-            e.segments[0].subtract(1, 1)
+            e.segments[0].position.subtract(1, 1)
           }
         }
         break
       case Rotation.DEG180:
         e.angle += 1
-        e.segments[0].add(-1, 0)
-        e.segments[1].add(0, -1)
+        e.segments[0].position.add(-1, 0)
+        e.segments[1].position.add(0, -1)
 
         break
       case Rotation.DEG270:
         e.angle = Rotation.DEG0
-        e.segments[1].add(1, 1)
-        if (e.segments[1].outOfBoard() || this.isCellOccupied(e.segments[1], e.id)) {
+        e.segments[1].position.add(1, 1)
+        if (e.segments[1].position.outOfBoard() || this.isCellOccupied(e.segments[1].position, e.id)) {
           const vector = Vector2.left()
           if (this.canMove(e, vector)) {
             for (let i = 0; i < e.segments.length; i++) {
-              e.segments[i].addVec(vector)
+              e.segments[i].position.addVec(vector)
             }
           } else {
-            e.segments[1].subtract(1, 1)
+            e.segments[1].position.subtract(1, 1)
           }
         }
         break
@@ -263,7 +283,7 @@ class Game {
     }
 
     for (let i = 0; i < e.segments.length; i++) {
-      this.updateBoard(Update.ADD, e.id, e.segments[i].x, e.segments[i].y, e.colors[i])
+      this.updateBoard(Update.ADD, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color)
     }
   }
 
@@ -282,6 +302,123 @@ class Game {
     }
   }
 
+  eliminateToSmall (toDelete: SegWithId[][]): void {
+    for (let i = 0; i < toDelete.length; i++) {
+      if (toDelete[i].length < 4) {
+        toDelete[i].length = 0
+      }
+    }
+  }
+
+  resetForNextCheck (toDelete: SegWithId[][], index: number): number {
+    if (toDelete[index].length >= 4) {
+      toDelete.push([])
+      index++
+    } else {
+      console.log('lenght =', toDelete[index].length, index)
+      toDelete.forEach((e) => {
+        e.forEach((_e) => {
+          console.log(_e[0], _e[1])
+        })
+      })
+      toDelete[index].length = 0
+    }
+    return index
+  }
+
+  checkRow (y: number): SegWithId[][] {
+    const toDelete: SegWithId[][] = []
+    toDelete.push([])
+    let index = 0
+
+    for (let i = 0; i < Game.boardWidth; i++) {
+      if (this.board[y][i] > 0) {
+        const block = this.blocks.get(this.board[y][i])
+        if (typeof block === 'undefined') break
+        const segIndex = (block.segments[0].position.x === i && block.segments[0].position.y === y) ? 0 : 1
+        // console.log(i, y, block, segIndex)
+        if (toDelete[index].length > 0 && toDelete[index][0][SegWithIdDesc.SEGMENT].color !== block.segments[segIndex].color) {
+          index = this.resetForNextCheck(toDelete, index)
+        }
+        toDelete[index].push([block.segments[segIndex], block.id])
+      } else {
+        index = this.resetForNextCheck(toDelete, index)
+      }
+    }
+
+    console.log('checkRow')
+    toDelete.forEach((e) => {
+      e.forEach((_e) => {
+        console.log(_e[0], _e[1])
+      })
+    })
+    this.eliminateToSmall(toDelete)
+    // console.log(toDelete)
+
+    return toDelete
+  }
+
+  checkColumn (x: number): SegWithId[][] {
+    const toDelete: SegWithId[][] = []
+    toDelete.push([])
+    let index = 0
+
+    for (let i = 0; i < Game.boardHeight; i++) {
+      if (this.board[i][x] > 0) {
+        const block = this.blocks.get(this.board[i][x])
+        if (typeof block === 'undefined') break
+        const segIndex = (block.segments[0].position.x === x && block.segments[0].position.y === i) ? 0 : 1
+        if (toDelete[index].length > 0 && toDelete[index][0][SegWithIdDesc.SEGMENT].color !== block.segments[segIndex].color) {
+          index = this.resetForNextCheck(toDelete, index)
+        }
+        toDelete[index].push([block.segments[segIndex], block.id])
+      } else {
+        index = this.resetForNextCheck(toDelete, index)
+      }
+    }
+
+    // console.log('checkColumn')
+    // toDelete.forEach((e) => {
+    //   e.forEach((_e) => {
+    //     console.log(_e[0], _e[1])
+    //   })
+    // })
+    this.eliminateToSmall(toDelete)
+
+    return toDelete
+  }
+
+  tryToDestroy (): void {
+    const toDeleteMap = new Map() as Map<Segment, number>
+    for (const segment of this.elementInControl.segments) {
+      for (const row of this.checkRow(segment.position.y)) {
+        for (const item of row) {
+          toDeleteMap.set(item[SegWithIdDesc.SEGMENT], item[SegWithIdDesc.ID])
+        }
+      }
+      for (const column of this.checkColumn(segment.position.x)) {
+        for (const item of column) {
+          toDeleteMap.set(item[SegWithIdDesc.SEGMENT], item[SegWithIdDesc.ID])
+        }
+      }
+    }
+
+    console.log(toDeleteMap)
+
+    toDeleteMap.forEach((v, k) => {
+      const block = this.blocks.get(v)
+      if (typeof block !== 'undefined') {
+        const segIndex = (block.segments[0].position.x === k.position.x && block.segments[0].position.y === k.position.y) ? 0 : 1
+        this.updateBoard(Update.DELETE, block.id,
+          block.segments[segIndex].position.x,
+          block.segments[segIndex].position.y,
+          block.segments[segIndex].color)
+
+        block.segments.splice(segIndex, 1)
+      }
+    })
+  }
+
   mainLoop (): void {
     if (this.loop != null) {
       clearInterval(this.loop)
@@ -292,18 +429,26 @@ class Game {
     }
 
     this.loop = setInterval(() => {
-      if (this.blocks.length > 100) {
+      if (this.blocks.size > 100) {
         clearInterval(this.loop)
       }
 
       let blockAdded = false
 
-      for (let i = 0; i < this.blocks.length; i++) {
-        const blockToMove = this.blocks[i]
+      const keys = this.blocks.keys()
+      for (const key of keys) {
+        const blockToMove = this.blocks.get(key)
+        if (typeof blockToMove === 'undefined') break
+        if (blockToMove.segments.length === 0) {
+          this.blocks.delete(key)
+          break
+        }
+
         if (this.canMove(blockToMove, Vector2.down())) {
           this.move(blockToMove, Vector2.down())
         } else {
           if (blockToMove.id === this.elementInControl.id && !blockAdded) {
+            this.tryToDestroy()
             this.spawnNewBlock()
             blockAdded = true
           }
@@ -315,3 +460,6 @@ class Game {
 
 const game = new Game()
 game.mainLoop()
+
+// Reasumując kwintesencje tematu, dochodzę do fundamentalnej konkluzji:
+// Walić OOP, najgorsze ścierwo
