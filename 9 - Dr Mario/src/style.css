@@ -15,14 +15,14 @@
 table {
     border-collapse: collapse;
     position: absolute;
-    left: 270px;
+    left: 274px;
     top: 95px;
 }
 
 .cell {
-    width: 17px;
-    height: 17px;
-    background-color: white;
+    width: 16px;
+    height: 16px;
+    background-color: black;
     font-size: 7px;
     text-align: center;
 }
@@ -42,7 +42,8 @@ table {
 }
 
 #scoreImgs,
-#recordImgs {
+#recordImgs,
+#virusCounter {
     display: flex;
     position: absolute;
     left: 40px;
@@ -56,6 +57,11 @@ table {
     top: 83px;
 }
 
+#virusCounter {
+    left: 560px;
+    top: 335px;
+}
+
 .dialog {
     position: absolute;
     bottom: calc(50% - 40px);
@@ -63,4 +69,28 @@ table {
     width: 330px;
     height: 122px;
     background-position-x: -2050px;
+}
+
+.virus-red {
+    background-position-x: -1848px;
+}
+
+.virus-blue {
+    background-position-x: -1831px;
+}
+
+.virus-green {
+    background-position-x: -1864px;
+}
+
+.red- {
+    background-position-x: -1720px;
+}
+
+.blue- {
+    background-position-x: -1608px;
+}
+
+.green- {
+    background-position-x: -3445px;
 }

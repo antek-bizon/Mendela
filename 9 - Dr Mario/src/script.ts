@@ -31,7 +31,7 @@ class Game {
   /** A Game's board width. */
   static boardWidth: number = 8
   /** A Game's board height. */
-  static boardHeight: number = 15
+  static boardHeight: number = 16
   /** A two-dimentional array representing board logically. */
   private readonly board: number[][]
   /** A physical HTML board displayed on a screen. */
@@ -47,8 +47,9 @@ class Game {
   /** Variables for holding scores. */
   private scoreCounter: number = 0
   private recordCounter: number = 0
-  /** A map containg viruses. Access to the virus is via virus's color */
-  private readonly viruses: Map<string, Segment> = new Map()
+  /** A map containg viruses. Access to the virus is via virus's id */
+  private readonly viruses: Map<number, Segment> = new Map()
+  private virusCount: number = 4
   /** An array that contains all avialable colors in a game. */
   private readonly colors: string[] = ['red', 'blue', 'green']
 
@@ -73,9 +74,9 @@ class Game {
     document.body.append(Game.mainDiv)
 
     this.staticAnimations = this.createStaticAnimations()
+    this.createVirusCounter()
 
     this.handleKeys()
-    this.mainLoop()
   }
 
   /**
@@ -154,10 +155,6 @@ class Game {
    */
   private createScoreCounter (): void {
     const mainDiv = document.createElement('div')
-    const recordDiv = document.createElement('div')
-    recordDiv.innerText = 'Record'
-    const scoreDiv = document.createElement('div')
-    scoreDiv.innerText = 'Score'
 
     this.recordCounter = parseInt(window.localStorage.getItem('record') ?? '0')
     this.scoreCounter = 0
@@ -170,10 +167,8 @@ class Game {
     this.updateScoreDiv(recordImgs, this.recordCounter)
     this.updateScoreDiv(scoreImgs, this.scoreCounter)
 
-    recordDiv.append(recordImgs)
-    scoreDiv.append(scoreImgs)
-    mainDiv.append(recordDiv)
-    mainDiv.append(scoreDiv)
+    mainDiv.append(recordImgs)
+    mainDiv.append(scoreImgs)
     Game.mainDiv.append(mainDiv)
   }
 
@@ -182,8 +177,8 @@ class Game {
    * @param score the string to with you want to add 0s.
    * @returns score with added zeros.
    */
-  private addZerosToScore (score: string): string {
-    const zeros = Array(7 - score.length).fill(0).join('') ?? ''
+  private addZerosToScore (score: string, length: number = 7): string {
+    const zeros = Array(length - score.length).fill(0).join('') ?? ''
     return zeros + score
   }
 
@@ -204,6 +199,25 @@ class Game {
       score.toString())).forEach(e => {
       div.append(e)
     })
+  }
+
+  private createVirusCounter (): void {
+    const virusCounter = document.createElement('div')
+    virusCounter.id = 'virusCounter'
+    this.convertToImages(this.addZerosToScore(this.virusCount.toString(), 2))
+      .forEach(e => virusCounter.append(e))
+
+    Game.mainDiv.append(virusCounter)
+  }
+
+  private updateVirusCounter (): void {
+    this.virusCount--
+    const virusCounter = document.getElementById('virusCounter')
+    if (virusCounter !== null) {
+      virusCounter.innerHTML = ''
+      this.convertToImages(this.addZerosToScore(this.virusCount.toString(), 2))
+        .forEach(e => virusCounter.append(e))
+    }
   }
 
   private createStaticAnimations (): Animation[] {
@@ -393,17 +407,16 @@ class Game {
     }
   }
 
-  private updateBoard (operation: Update, id: number, x: number, y: number, color: string): void {
+  private updateBoard (operation: Update, id: number, x: number, y: number, color: string = '', orientation: string = ''): void {
     switch (operation) {
       case Update.ADD:
         this.board[y][x] = id
         this.boardHTML.rows[y].cells[x].style.backgroundColor = color
+        this.boardHTML.rows[y].cells[x].classList.add('spritesheet')
         if (id > 0) {
-          this.boardHTML.rows[y].cells[x].classList.add('pill')
-          this.boardHTML.rows[y].cells[x].innerText = '💊'
+          this.boardHTML.rows[y].cells[x].classList.add(`${color}-${orientation}`)
         } else {
-          this.boardHTML.rows[y].cells[x].classList.add('virus')
-          this.boardHTML.rows[y].cells[x].innerText = '🦠'
+          this.boardHTML.rows[y].cells[x].classList.add(`virus-${color}`)
         }
         break
       case Update.DELETE:
@@ -475,8 +488,7 @@ class Game {
         }
         toDelete[index].push([block.segments[segIndex], block.id])
       } else if (id < 0) {
-        const color = this.getVirusColorFromId(id)
-        const virus = this.viruses.get(color)
+        const virus = this.viruses.get(id)
         if (typeof virus === 'undefined') continue
         if (toDelete[index].length > 0 && toDelete[index][0][SegWithIdDesc.SEGMENT].color !== virus.color) {
           index = this.resetForNextCheck(toDelete, index)
@@ -518,14 +530,12 @@ class Game {
 
         block.segments.splice(segIndex, 1)
       } else {
-        const color = this.getVirusColorFromId(v)
-        const virus = this.viruses.get(color)
+        const virus = this.viruses.get(v)
         if (typeof virus !== 'undefined') {
           this.updateBoard(Update.DELETE, v, virus.position.x,
-            virus.position.y, color)
+            virus.position.y)
           this.setScore(100)
-          this.viruses.delete(color)
-          this.generateViruses()
+          this.viruses.delete(v)
         }
       }
     })
@@ -537,6 +547,7 @@ class Game {
     this.scoreCounter += delta
     const scoreImgs = document.getElementById('scoreImgs') as HTMLDivElement
     this.updateScoreDiv(scoreImgs, this.scoreCounter)
+    this.updateVirusCounter()
 
     if (this.recordCounter < this.scoreCounter) {
       const recordImgs = document.getElementById('recordImgs') as HTMLDivElement
@@ -576,28 +587,22 @@ class Game {
     return [-1, -1]
   }
 
-  private getVirusColorFromId (id: number): string {
-    const index = id * -1 - 1
-    return this.colors[index]
-  }
-
-  private spawnVirus (x: number, y: number, colorIndex: number): void {
-    const virusId = -colorIndex - 1
-    const segment: Segment = { position: new Vector2(x, y), color: this.colors[colorIndex] }
-    this.updateBoard(Update.ADD, virusId, x, y, this.colors[colorIndex])
-    this.viruses.set(this.colors[colorIndex], segment)
+  private spawnVirus (x: number, y: number, virusIndex: number, color: string): void {
+    const virusId = (virusIndex + 1) * -1
+    const segment: Segment = { position: new Vector2(x, y), color }
+    this.updateBoard(Update.ADD, virusId, x, y, color)
+    this.viruses.set(virusId, segment)
   }
 
   private generateViruses (): void {
-    this.colors.forEach((color, i) => {
-      if (!this.viruses.has(color)) {
-        const [x, y] = this.findFreeSpace()
-        if (x > -1 && y > -1) {
-          this.spawnVirus(x, y, i)
-          console.log(color)
-        }
+    console.log(this.virusCount)
+    for (let i = 0; i < this.virusCount; i++) {
+      const [x, y] = this.findFreeSpace()
+      const color = this.randomColor()
+      if (x > -1 && y > -1) {
+        this.spawnVirus(x, y, i, color)
       }
-    })
+    }
   }
 
   private gameOver (): void {
@@ -610,6 +615,16 @@ class Game {
     dialog.open = true
   }
 
+  debugPrintBoard (): void {
+    for (let i = 0; i < Game.boardHeight; i++) {
+      let row = ''
+      for (let j = 0; j < Game.boardWidth; j++) {
+        row += '|' + this.board[i][j].toString()
+      }
+      console.log(row)
+    }
+  }
+
   mainLoop (): void {
     if (this.loop !== -1) {
       clearInterval(this.loop)
@@ -620,6 +635,7 @@ class Game {
     }
 
     this.generateViruses()
+    this.debugPrintBoard()
 
     this.loop = setInterval(() => {
       let blockAdded = false
