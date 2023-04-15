@@ -1,45 +1,86 @@
 import Vector2 from './vector2'
 import { Segment, Block, Rotation } from './block'
+import Animation from './animation'
 
+/**
+ * Flag for indicating update operations.
+ */
 enum Update {
   ADD = 0,
   DELETE
 }
 
+/**
+ * Flag for indicating tuple fields.
+ */
 enum SegWithIdDesc {
   SEGMENT = 0,
   ID = 1,
 }
 
+/**
+ * Tuple holding a block's segment value and a block's id.
+ */
 type SegWithId = [Segment, number]
 
+/**
+ * Main class containing game logic.
+ */
 class Game {
-  static boardWidth: number
-  static boardHeight: number
+  static readonly mainDiv: HTMLDivElement = document.createElement('div')
+  /** A Game's board width. */
+  static boardWidth: number = 8
+  /** A Game's board height. */
+  static boardHeight: number = 15
+  /** A two-dimentional array representing board logically. */
   private readonly board: number[][]
+  /** A physical HTML board displayed on a screen. */
   private readonly boardHTML: HTMLTableElement
+  /** A map containg blocks. Access to the block is via block's id. */
   private readonly blocks: Map<number, Block> = new Map()
+  /** A block that is currently controlled by the player. */
   private elementInControl: Block = { id: -1, segments: [], angle: Rotation.DEG0, active: false } // need to init with something
+  /** A main loop id */
   private loop: number = -1
+  /** An id that will be given for the next added block. */
   private nextId = 1
-  private readonly scoreCounter: HTMLDivElement = document.createElement('div')
+  /** Variables for holding scores. */
+  private scoreCounter: number = 0
+  private recordCounter: number = 0
+  /** A map containg viruses. Access to the virus is via virus's color */
   private readonly viruses: Map<string, Segment> = new Map()
+  /** An array that contains all avialable colors in a game. */
   private readonly colors: string[] = ['red', 'blue', 'green']
 
-  constructor (width?: number, height?: number) {
-    Game.boardWidth = (typeof width !== 'undefined') ? width : 10
-    Game.boardHeight = (typeof height !== 'undefined') ? height : 20
+  private readonly staticAnimations: Animation[]
+
+  private frame = 0
+
+  /**
+   * Creates a new Game object.
+   *
+   * @param width sets boardWidth.
+   * @param height sets boardHeight.
+   */
+  constructor () {
     console.log('Game start')
     this.createScoreCounter()
     const [board, boardHTML] = this.createBoard(Game.boardWidth, Game.boardHeight)
     this.board = board
     this.boardHTML = boardHTML
-    document.body.append(this.boardHTML)
+    Game.mainDiv.append(this.boardHTML)
+    Game.mainDiv.classList.add('mainDiv', 'spritesheet')
+    document.body.append(Game.mainDiv)
+
+    this.staticAnimations = this.createStaticAnimations()
 
     this.handleKeys()
     this.mainLoop()
   }
 
+  /**
+   * Sets control keys.
+   */
   private handleKeys (): void {
     document.addEventListener('keydown', (e) => {
       switch (e.code) {
@@ -68,6 +109,13 @@ class Game {
     })
   }
 
+  /**
+   * Creates row for a logical board and a physical board.
+   *
+   * @param width number of cells in the row.
+   * @param rowNr which row is created.
+   * @returns row for a board and HTML row for a HTML board.
+   */
   private createRow (width: number, rowNr: number): [number[], HTMLTableRowElement] {
     const row = new Array(width)
     const rowHTML = document.createElement('tr')
@@ -81,6 +129,13 @@ class Game {
     return [row, rowHTML]
   }
 
+  /**
+   * Creates a logical and physical board.
+   *
+   * @param width number of cells in rows.
+   * @param height number of rows.
+   * @returns a logical and a physical board.
+   */
   private createBoard (width: number, height: number): [number[][], HTMLTableElement] {
     const board = new Array(height)
     const boardHTML = document.createElement('table')
@@ -94,13 +149,115 @@ class Game {
     return [board, boardHTML]
   }
 
+  /**
+   * Creates a score counter.
+   */
   private createScoreCounter (): void {
-    window.localStorage.setItem('score', '0')
-    this.scoreCounter.innerText = '0'
-    this.scoreCounter.classList.add('score')
-    document.body.append(this.scoreCounter)
+    const mainDiv = document.createElement('div')
+    const recordDiv = document.createElement('div')
+    recordDiv.innerText = 'Record'
+    const scoreDiv = document.createElement('div')
+    scoreDiv.innerText = 'Score'
+
+    this.recordCounter = parseInt(window.localStorage.getItem('record') ?? '0')
+    this.scoreCounter = 0
+
+    const recordImgs = document.createElement('div')
+    recordImgs.id = 'recordImgs'
+    const scoreImgs = document.createElement('div')
+    scoreImgs.id = 'scoreImgs'
+
+    this.updateScoreDiv(recordImgs, this.recordCounter)
+    this.updateScoreDiv(scoreImgs, this.scoreCounter)
+
+    recordDiv.append(recordImgs)
+    scoreDiv.append(scoreImgs)
+    mainDiv.append(recordDiv)
+    mainDiv.append(scoreDiv)
+    Game.mainDiv.append(mainDiv)
   }
 
+  /**
+   * Add zeros before the score for prettier look.
+   * @param score the string to with you want to add 0s.
+   * @returns score with added zeros.
+   */
+  private addZerosToScore (score: string): string {
+    const zeros = Array(7 - score.length).fill(0).join('') ?? ''
+    return zeros + score
+  }
+
+  private convertToImages (score: string): HTMLDivElement[] {
+    const images = [] as HTMLDivElement[]
+    for (let i = 0; i < score.length; i++) {
+      const image = document.createElement('div')
+      image.style.backgroundPositionX = `${-1155 - parseInt(score[i]) * 24}px`
+      image.classList.add('spritesheet', 'letter')
+      images.push(image)
+    }
+    return images
+  }
+
+  private updateScoreDiv (div: HTMLDivElement, score: number): void {
+    div.innerHTML = ''
+    this.convertToImages(this.addZerosToScore(
+      score.toString())).forEach(e => {
+      div.append(e)
+    })
+  }
+
+  private createStaticAnimations (): Animation[] {
+    const animations: Animation[] = [
+      {
+        size: new Vector2(96, 73),
+        offset: 0,
+        framesInTotal: 2,
+        nextFrameOffset: 96,
+        positions: [
+          new Vector2(30, 220),
+          new Vector2(70, 295),
+          new Vector2(120, 230)
+        ]
+      },
+      {
+        size: new Vector2(96, 73),
+        offset: 384,
+        framesInTotal: 2,
+        nextFrameOffset: 96,
+        positions: [
+          new Vector2(120, 230),
+          new Vector2(30, 220),
+          new Vector2(70, 295)
+        ]
+      },
+      {
+        size: new Vector2(96, 73),
+        offset: 768,
+        framesInTotal: 2,
+        nextFrameOffset: 96,
+        positions: [
+          new Vector2(70, 295),
+          new Vector2(120, 230),
+          new Vector2(30, 220)
+        ]
+      }
+    ].map((e) => {
+      return new Animation(
+        Game.mainDiv,
+        e.size,
+        e.offset,
+        e.framesInTotal,
+        e.positions,
+        e.nextFrameOffset)
+    })
+
+    return animations
+  }
+
+  /**
+   * Choises a random color from a colors array.
+   * @returns a string of a random color.
+   */
   private randomColor (): string {
     const choice = Math.round(Math.random() * 1000) % 3
     if (choice >= 0 && choice < this.colors.length) {
@@ -110,16 +267,18 @@ class Game {
     return 'violet' // It signals something went wrong
   }
 
+  /**
+   * Spawns a new block.
+   */
   private spawnNewBlock (): void {
     const segments: Segment[] = [
-      { position: new Vector2(Game.boardWidth / 2, 0), color: this.randomColor() },
-      { position: new Vector2(Game.boardWidth / 2 + 1, 0), color: this.randomColor() }
+      { position: new Vector2(Math.floor(Game.boardWidth / 2) - 1, 0), color: this.randomColor() },
+      { position: new Vector2(Math.floor(Game.boardWidth / 2), 0), color: this.randomColor() }
     ]
     for (const segment of segments) {
       if (this.isCellOccupied(segment.position, 0)) {
-        console.log('game over')
-        window.alert('game over')
-        clearInterval(this.loop)
+        console.log(segment.position)
+        this.gameOver()
         return
       }
     }
@@ -131,11 +290,25 @@ class Game {
     }
   }
 
+  /**
+   * Checks if a cell is occupied.
+   *
+   * @param nextPos position of a cell to check.
+   * @param id id of a block.
+   * @returns true if is occupied | false is is free.
+   */
   private isCellOccupied (nextPos: Vector2, id: number): boolean {
     const isOccupied = (this.board[nextPos.y][nextPos.x] !== 0 && this.board[nextPos.y][nextPos.x] !== id)
     return isOccupied
   }
 
+  /**
+   * Checks if a block is able to move by a given vector.
+   *
+   * @param e block to check.
+   * @param vector vector to which we want to move a block.
+   * @returns true if is is possible to move | false if it isn't possible.
+   */
   private canMove (e: Block, vector: Vector2): boolean {
     for (const segment of e.segments) {
       const nextPos = Vector2.addVec(segment.position, vector)
@@ -361,10 +534,18 @@ class Game {
   }
 
   private setScore (delta: number): void {
-    let score = parseInt(window.localStorage.getItem('score') ?? '0')
-    score += delta
-    window.localStorage.setItem('score', score.toString())
-    this.scoreCounter.innerText = score.toString()
+    this.scoreCounter += delta
+    const scoreImgs = document.getElementById('scoreImgs') as HTMLDivElement
+    this.updateScoreDiv(scoreImgs, this.scoreCounter)
+
+    if (this.recordCounter < this.scoreCounter) {
+      const recordImgs = document.getElementById('recordImgs') as HTMLDivElement
+      if (recordImgs !== null) {
+        this.recordCounter = this.scoreCounter
+        this.updateScoreDiv(recordImgs, this.recordCounter)
+      }
+      window.localStorage.setItem('record', this.recordCounter.toString())
+    }
   }
 
   private findFreeSpace (): [number, number] {
@@ -419,6 +600,16 @@ class Game {
     })
   }
 
+  private gameOver (): void {
+    console.log('game over')
+    clearInterval(this.loop)
+    const dialog = document.createElement('dialog')
+    dialog.classList.add('spritesheet')
+    dialog.classList.add('dialog')
+    Game.mainDiv.appendChild(dialog)
+    dialog.open = true
+  }
+
   mainLoop (): void {
     if (this.loop !== -1) {
       clearInterval(this.loop)
@@ -433,6 +624,8 @@ class Game {
     this.loop = setInterval(() => {
       let blockAdded = false
 
+      this.staticAnimations.forEach(e => e.update())
+
       const keys = this.blocks.keys()
       for (const key of keys) {
         const blockToMove = this.blocks.get(key)
@@ -444,7 +637,9 @@ class Game {
 
         if (blockToMove.active) {
           if (this.canMove(blockToMove, Vector2.down())) {
-            this.move(blockToMove, Vector2.down())
+            if (blockToMove.id !== this.elementInControl.id || this.frame === 0) {
+              this.move(blockToMove, Vector2.down())
+            }
           } else {
             if (this.tryToDestroy(blockToMove)) {
               for (const [_, value] of this.blocks) {
@@ -463,7 +658,8 @@ class Game {
           blockAdded = true
         }
       }
-    }, 500)
+      this.frame = (this.frame + 1) % 5
+    }, 100)
   }
 }
 
