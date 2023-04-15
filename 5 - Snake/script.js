@@ -140,10 +140,10 @@ function updateSnake (snake, heading) {
 
 function generateApple () {
   while (genApple) {
-    const x = Math.floor(Math.random() * size)
-    const y = Math.floor(Math.random() * size)
+    const x = 1 + Math.round(Math.random() * (size - 3))
+    const y = 1 + Math.round(Math.random() * (size - 3))
     const td = document.getElementById(`${x}_${y}`)
-    if (!td.classList.contains('snake') && td.innerText !== 'X') {
+    if (!td.classList.contains('snake') && !td.classList.contains('wall')) {
       td.classList.add('apple')
       genApple = false
     }
