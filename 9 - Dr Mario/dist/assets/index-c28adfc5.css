@@ -1,1 +1,233 @@
-*{padding:0;margin:0;box-sizing:border-box}.mainDiv{position:relative;width:640px;height:400px;background-position-x:-2380px;background-repeat:no-repeat}table{border-collapse:collapse;position:absolute;left:274px;top:95px}.cell{width:16px;height:16px;background-color:#000;font-size:7px;text-align:center;z-index:2}.invisible{display:none}.spritesheet{background-image:url(/spritesheet.png)}.letter{width:24px;height:22px;background-position-y:0px}#scoreImgs,#recordImgs,#virusCounter{display:flex;position:absolute;left:40px}#scoreImgs{top:133px}#recordImgs{top:83px}#virusCounter{left:560px;top:335px}.dialog{position:absolute;bottom:calc(50% - 40px);height:122px}.game-over{bottom:calc(50% - 40px);left:calc(50% - 175px);width:330px;height:122px;background-position-x:-2050px}.stage-complete{left:calc(50% - 200px);width:425px;background-position-x:-3022px}.virus-red{background-image:url(/covid_brown.png)}.virus-blue{background-image:url(/covid_blue.png)}.virus-green{background-image:url(/covid_yellow.png)}.red-{background-position-x:-1720px}.blue-{background-position-x:-1608px}.green-{background-position-x:-3445px}.pill-animation-1{animation-duration:1.8s;animation-name:pill-animation-1;animation-direction:normal;animation-timing-function:steps(3,end)}.pill-animation-2{animation-duration:1.8s;animation-name:pill-animation-2;animation-direction:normal;animation-timing-function:steps(3,end)}.hand{position:absolute;z-index:1;top:62px;left:496px;background-image:url(/hand.png);background-size:75px;background-repeat:no-repeat;width:18px;height:70px}.hand-animation{animation-duration:.35s;animation-name:hand-animation;animation-direction:normal;animation-timing-function:steps(1,end)}@keyframes hand-animation{33%{width:35px;height:37px;left:480px;top:80px;background-position-x:-20px}66%{background-position-x:-60px;width:24px;height:48px;left:500px;top:100px}to{background-position-x:-60px;width:24px;height:48px;left:500px;top:100px}}.pill-hand-2{position:absolute;top:50px;left:495px}.pill-hand-1{position:absolute;top:50px;left:479px}@keyframes pill-animation-1{20%{top:30px;left:445px}40%{top:10px;left:400px}60%{top:15px;left:360px}80%{top:30px;left:330px}to{top:100px;left:320px}}@keyframes pill-animation-2{20%{top:30px;left:460px}40%{top:10px;left:415px}60%{top:15px;left:375px}80%{top:30px;left:345px}to{top:100px;left:335px}}
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box
+}
+
+.mainDiv {
+    position: relative;
+    width: 640px;
+    height: 400px;
+    background-position-x: -2380px;
+    background-repeat: no-repeat
+}
+
+table {
+    border-collapse: collapse;
+    position: absolute;
+    left: 274px;
+    top: 95px
+}
+
+.cell {
+    width: 16px;
+    height: 16px;
+    background-color: #000;
+    font-size: 7px;
+    text-align: center;
+    z-index: 2
+}
+
+.invisible {
+    display: none
+}
+
+.spritesheet {
+    background-image: url(../spritesheet.png)
+}
+
+.letter {
+    width: 24px;
+    height: 22px;
+    background-position-y: 0px
+}
+
+#scoreImgs,
+#recordImgs,
+#virusCounter {
+    display: flex;
+    position: absolute;
+    left: 40px
+}
+
+#scoreImgs {
+    top: 133px
+}
+
+#recordImgs {
+    top: 83px
+}
+
+#virusCounter {
+    left: 560px;
+    top: 335px
+}
+
+.dialog {
+    position: absolute;
+    bottom: calc(50% - 40px);
+    height: 122px
+}
+
+.game-over {
+    bottom: calc(50% - 40px);
+    left: calc(50% - 175px);
+    width: 330px;
+    height: 122px;
+    background-position-x: -2050px
+}
+
+.stage-complete {
+    left: calc(50% - 200px);
+    width: 425px;
+    background-position-x: -3022px
+}
+
+.virus-red {
+    background-image: url(../covid_brown.png)
+}
+
+.virus-blue {
+    background-image: url(../covid_blue.png)
+}
+
+.virus-green {
+    background-image: url(../covid_yellow.png)
+}
+
+.red- {
+    background-position-x: -1720px
+}
+
+.blue- {
+    background-position-x: -1608px
+}
+
+.green- {
+    background-position-x: -3445px
+}
+
+.pill-animation-1 {
+    animation-duration: 1.8s;
+    animation-name: pill-animation-1;
+    animation-direction: normal;
+    animation-timing-function: steps(3, end)
+}
+
+.pill-animation-2 {
+    animation-duration: 1.8s;
+    animation-name: pill-animation-2;
+    animation-direction: normal;
+    animation-timing-function: steps(3, end)
+}
+
+.hand {
+    position: absolute;
+    z-index: 1;
+    top: 62px;
+    left: 496px;
+    background-image: url(../hand.png);
+    background-size: 75px;
+    background-repeat: no-repeat;
+    width: 18px;
+    height: 70px
+}
+
+.hand-animation {
+    animation-duration: .35s;
+    animation-name: hand-animation;
+    animation-direction: normal;
+    animation-timing-function: steps(1, end)
+}
+
+@keyframes hand-animation {
+    33% {
+        width: 35px;
+        height: 37px;
+        left: 480px;
+        top: 80px;
+        background-position-x: -20px
+    }
+
+    66% {
+        background-position-x: -60px;
+        width: 24px;
+        height: 48px;
+        left: 500px;
+        top: 100px
+    }
+
+    to {
+        background-position-x: -60px;
+        width: 24px;
+        height: 48px;
+        left: 500px;
+        top: 100px
+    }
+}
+
+.pill-hand-2 {
+    position: absolute;
+    top: 50px;
+    left: 495px
+}
+
+.pill-hand-1 {
+    position: absolute;
+    top: 50px;
+    left: 479px
+}
+
+@keyframes pill-animation-1 {
+    20% {
+        top: 30px;
+        left: 445px
+    }
+
+    40% {
+        top: 10px;
+        left: 400px
+    }
+
+    60% {
+        top: 15px;
+        left: 360px
+    }
+
+    80% {
+        top: 30px;
+        left: 330px
+    }
+
+    to {
+        top: 100px;
+        left: 320px
+    }
+}
+
+@keyframes pill-animation-2 {
+    20% {
+        top: 30px;
+        left: 460px
+    }
+
+    40% {
+        top: 10px;
+        left: 415px
+    }
+
+    60% {
+        top: 15px;
+        left: 375px
+    }
+
+    80% {
+        top: 30px;
+        left: 345px
+    }
+
+    to {
+        top: 100px;
+        left: 335px
+    }
+}
