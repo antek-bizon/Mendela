@@ -7,7 +7,7 @@
 export default class Vector2 {
   x: number
   y: number
-  constructor (x: number, y: number) {
+  constructor (x: number = 0, y: number = 0) {
     this.x = x
     this.y = y
   }
@@ -80,6 +80,16 @@ export default class Vector2 {
   subtract (x: number, y: number): void {
     this.x -= x
     this.y -= y
+  }
+
+  /**
+   * Subtract exisiting vector from the given vector
+   * 
+   * @param vector vector from with you want to take values
+   */
+  subtractVec (vector: Vector2): void {
+    this.x -= vector.x
+    this.y -= vector.y
   }
 
   /**

@@ -7,7 +7,14 @@ import Animation from './animation'
  */
 enum Update {
   ADD = 0,
-  DELETE
+  DELETE,
+  ANIMATION
+}
+
+enum State {
+  PLAYING,
+  ANIMATION,
+  ADDING
 }
 
 /**
@@ -39,7 +46,13 @@ class Game {
   /** A map containg blocks. Access to the block is via block's id. */
   private readonly blocks: Map<number, Block> = new Map()
   /** A block that is currently controlled by the player. */
-  private elementInControl: Block = { id: -1, segments: [], angle: Rotation.DEG0, active: false } // need to init with something
+  private elementInControl: Block = {
+    id: -1,
+    segments: [],
+    angle: Rotation.DEG0,
+    active: false
+  } // need to init with something
+
   /** A main loop id */
   private loop: number = -1
   /** An id that will be given for the next added block. */
@@ -56,6 +69,12 @@ class Game {
   private readonly staticAnimations: Animation[]
 
   private frame = 0
+
+  private buttonDown: boolean = false
+  private state: State = State.PLAYING
+  private toDelete: Map<Segment, number> = new Map()
+  private readonly hand: HTMLDivElement[]
+  private nextBlock: Block
 
   /**
    * Creates a new Game object.
@@ -74,6 +93,10 @@ class Game {
     document.body.append(Game.mainDiv)
 
     this.staticAnimations = this.createStaticAnimations()
+    this.hand = this.createPillHand()
+    this.hand.forEach(e => Game.mainDiv.append(e))
+    this.nextBlock = this.generateNewBlock()
+
     this.createVirusCounter()
 
     this.handleKeys()
@@ -86,25 +109,32 @@ class Game {
     document.addEventListener('keydown', (e) => {
       switch (e.code) {
         case 'KeyD':
+          if (this.buttonDown || this.state !== State.PLAYING) break
           if (this.canMove(this.elementInControl, Vector2.right())) {
             this.move(this.elementInControl, Vector2.right())
           }
           break
         case 'KeyA':
+          if (this.buttonDown || this.state !== State.PLAYING) break
           if (this.canMove(this.elementInControl, Vector2.left())) {
             this.move(this.elementInControl, Vector2.left())
           }
           break
         case 'KeyS':
-          if (this.canMove(this.elementInControl, Vector2.down())) {
-            this.move(this.elementInControl, Vector2.down())
-          }
+          this.buttonDown = true
           break
         case 'KeyW':
+          if (this.buttonDown || this.state !== State.PLAYING) break
           this.rotate(this.elementInControl)
+          break
+        case 'KeyE':
+          if (this.buttonDown || this.state !== State.PLAYING) break
+          this.rotate(this.elementInControl, true)
           break
         case 'KeyP':
           clearInterval(this.loop)
+          break
+        default:
           break
       }
     })
@@ -148,6 +178,14 @@ class Game {
     }
 
     return [board, boardHTML]
+  }
+
+  private createPillHand (): HTMLDivElement[] {
+    return [
+      document.createElement('div'),
+      document.createElement('div'),
+      document.createElement('div')
+    ]
   }
 
   /**
@@ -218,6 +256,9 @@ class Game {
       this.convertToImages(this.addZerosToScore(this.virusCount.toString(), 2))
         .forEach(e => virusCounter.append(e))
     }
+    if (this.virusCount === 0) {
+      this.stageComplete()
+    }
   }
 
   private createStaticAnimations (): Animation[] {
@@ -281,27 +322,76 @@ class Game {
     return 'violet' // It signals something went wrong
   }
 
+  private generateNewBlock (): Block {
+    const segments: Segment[] = [
+      {
+        position: new Vector2(Math.floor(Game.boardWidth / 2) - 1, 0),
+        color: this.randomColor(),
+        frame: 0,
+        frequency: 5,
+        numOfFrames: 4
+      },
+      {
+        position: new Vector2(Math.floor(Game.boardWidth / 2), 0),
+        color: this.randomColor(),
+        frame: 0,
+        frequency: 5,
+        numOfFrames: 4
+      }
+    ]
+
+    for (let i = 0; i < segments.length; i++) {
+      this.hand[i].className = 'cell'
+      this.hand[i].classList.add('spritesheet')
+      this.hand[i].classList.add(`pill-hand-${i + 1}`)
+      this.hand[i].classList.add(`${segments[i].color}-`)
+    }
+
+    this.hand[2].className = 'hand'
+
+    return {
+      id: this.nextId,
+      segments,
+      angle: Rotation.DEG0,
+      active: true
+    }
+  }
+
   /**
    * Spawns a new block.
    */
   private spawnNewBlock (): void {
-    const segments: Segment[] = [
-      { position: new Vector2(Math.floor(Game.boardWidth / 2) - 1, 0), color: this.randomColor() },
-      { position: new Vector2(Math.floor(Game.boardWidth / 2), 0), color: this.randomColor() }
-    ]
-    for (const segment of segments) {
+    this.buttonDown = false
+
+    this.elementInControl = this.nextBlock
+
+    for (const segment of this.elementInControl.segments) {
       if (this.isCellOccupied(segment.position, 0)) {
-        console.log(segment.position)
         this.gameOver()
         return
       }
     }
-    const block: Block = { id: this.nextId, segments, angle: Rotation.DEG0, active: true }
-    this.elementInControl = block
-    this.blocks.set(this.nextId++, block)
-    for (let i = 0; i < block.segments.length; i++) {
-      this.updateBoard(Update.ADD, block.id, block.segments[i].position.x, block.segments[i].position.y, block.segments[i].color)
+
+    this.blocks.set(this.nextId++, this.elementInControl)
+    for (let i = 0; i < this.elementInControl.segments.length; i++) {
+      this.hand[i].classList.add(`pill-animation-${i + 1}`)
     }
+
+    this.hand[2].classList.add('hand-animation')
+
+    this.state = State.ADDING
+
+    setTimeout(() => {
+      this.state = State.PLAYING
+      for (let i = 0; i < this.elementInControl.segments.length; i++) {
+        this.updateBoard(Update.ADD,
+          this.elementInControl.id,
+          this.elementInControl.segments[i].position.x,
+          this.elementInControl.segments[i].position.y,
+          this.elementInControl.segments[i].color)
+        this.nextBlock = this.generateNewBlock()
+      }
+    }, 1800)
   }
 
   /**
@@ -353,53 +443,84 @@ class Game {
     }
   }
 
-  private rotate (e: Block): void {
+  private canRotate (e: Block): boolean {
+    let freeSpace = true
+    for (let i = 0; i < e.segments.length; i++) {
+      if (e.segments[i].position.outOfBoard(Game.boardWidth) || this.isCellOccupied(e.segments[i].position, e.id)) {
+        freeSpace = false
+        break
+      }
+    }
+    if (!freeSpace) {
+      const vector = Vector2.left()
+      if (this.canMove(e, vector)) {
+        for (let i = 0; i < e.segments.length; i++) {
+          e.segments[i].position.addVec(vector)
+        }
+        return true
+      } else {
+        return false
+      }
+    }
+    return true
+  }
+
+  private rotateVector (angle: Rotation, reversed = false): Vector2[] {
+    switch (angle) {
+      case Rotation.DEG0:
+        if (reversed) return [new Vector2(), new Vector2(-1, -1)]
+
+        return [new Vector2(0, -1), new Vector2(-1, 0)]
+      case Rotation.DEG90:
+        if (reversed) return [new Vector2(0, 1), new Vector2(1, 0)]
+
+        return [new Vector2(1, 1), new Vector2()]
+      case Rotation.DEG180:
+        if (reversed) return [new Vector2(-1, -1), new Vector2()]
+
+        return [new Vector2(-1, 0), new Vector2(0, -1)]
+      case Rotation.DEG270:
+        if (reversed) return [new Vector2(1, 0), new Vector2(0, 1)]
+
+        return [new Vector2(), new Vector2(1, 1)]
+      default:
+        console.error('Incorrect angle: ', angle)
+    }
+    return [new Vector2(), new Vector2()]
+  }
+
+  private nextAngle (angle: Rotation, reversed: boolean): Rotation {
+    if (reversed) {
+      if (angle === Rotation.DEG0) {
+        return Rotation.DEG270
+      }
+      return angle - 1
+    }
+    if (angle === Rotation.DEG270) {
+      return Rotation.DEG0
+    }
+    return angle + 1
+  }
+
+  private rotate (e: Block, reversed: boolean = false): void {
     for (let i = 0; i < e.segments.length; i++) {
       this.updateBoard(Update.DELETE, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color)
     }
 
-    switch (e.angle) {
-      case Rotation.DEG0:
-        e.angle += 1
-        e.segments[0].position.add(0, -1)
-        e.segments[1].position.add(-1, 0)
-        break
-      case Rotation.DEG90:
-        e.angle += 1
-        e.segments[0].position.add(1, 1)
-        if (e.segments[0].position.outOfBoard(Game.boardWidth) || this.isCellOccupied(e.segments[0].position, e.id)) {
-          const vector = Vector2.left()
-          if (this.canMove(e, vector)) {
-            for (let i = 0; i < e.segments.length; i++) {
-              e.segments[i].position.addVec(vector)
-            }
-          } else {
-            e.segments[0].position.subtract(1, 1)
-          }
-        }
-        break
-      case Rotation.DEG180:
-        e.angle += 1
-        e.segments[0].position.add(-1, 0)
-        e.segments[1].position.add(0, -1)
+    const moveBy = this.rotateVector(e.angle, reversed)
+    const prevAngle = e.angle
 
-        break
-      case Rotation.DEG270:
-        e.angle = Rotation.DEG0
-        e.segments[1].position.add(1, 1)
-        if (e.segments[1].position.outOfBoard(Game.boardWidth) || this.isCellOccupied(e.segments[1].position, e.id)) {
-          const vector = Vector2.left()
-          if (this.canMove(e, vector)) {
-            for (let i = 0; i < e.segments.length; i++) {
-              e.segments[i].position.addVec(vector)
-            }
-          } else {
-            e.segments[1].position.subtract(1, 1)
-          }
+    if (e.segments[0].position.y !== 0 /* && e.segments[1].position.y !== 0 */) {
+      e.angle = this.nextAngle(e.angle, reversed)
+      for (let i = 0; i < e.segments.length; i++) {
+        e.segments[i].position.addVec(moveBy[i])
+      }
+      if (!this.canRotate(e)) {
+        e.angle = prevAngle
+        for (let i = 0; i < e.segments.length; i++) {
+          e.segments[i].position.subtractVec(moveBy[i])
         }
-        break
-      default:
-        console.error('Unknow rotation value')
+      }
     }
 
     for (let i = 0; i < e.segments.length; i++) {
@@ -407,26 +528,33 @@ class Game {
     }
   }
 
-  private updateBoard (operation: Update, id: number, x: number, y: number, color: string = '', orientation: string = ''): void {
+  private updateBoard (operation: Update, id: number, x: number, y: number, color: string = '', kind: string = ''): void {
     switch (operation) {
       case Update.ADD:
         this.board[y][x] = id
-        this.boardHTML.rows[y].cells[x].style.backgroundColor = color
         this.boardHTML.rows[y].cells[x].classList.add('spritesheet')
         if (id > 0) {
-          this.boardHTML.rows[y].cells[x].classList.add(`${color}-${orientation}`)
+          this.boardHTML.rows[y].cells[x].classList.add(`${color}-${kind}`)
         } else {
           this.boardHTML.rows[y].cells[x].classList.add(`virus-${color}`)
         }
         break
       case Update.DELETE:
         this.board[y][x] = 0
-        this.boardHTML.rows[y].cells[x].style.backgroundColor = ''
         this.boardHTML.rows[y].cells[x].className = 'cell'
-        this.boardHTML.rows[y].cells[x].innerText = ''
+        // this.boardHTML.rows[y].cells[x].innerText = ''
+        break
+      case Update.ANIMATION:
+        this.boardHTML.rows[y].cells[x].className = 'cell'
+        if (id > 0) {
+          this.boardHTML.rows[y].cells[x].classList.add('spritesheet')
+          this.boardHTML.rows[y].cells[x].classList.add(`${color}-${kind}`)
+        } else {
+          this.boardHTML.rows[y].cells[x].classList.add(`virus-${color}`)
+        }
         break
       default:
-        console.error('Unknown update operation')
+        console.error('Unknown update operation:', operation)
     }
   }
 
@@ -519,28 +647,60 @@ class Game {
       }
     }
 
-    toDeleteMap.forEach((v, k) => {
+    this.toDelete = toDeleteMap
+
+    return toDeleteMap.size > 3
+  }
+
+  private destroy (): void {
+    const clearMap: Segment[] = []
+    this.toDelete.forEach((v, k) => {
       const block = this.blocks.get(v)
       if (typeof block !== 'undefined') {
         const segIndex = (block.segments[0].position.x === k.position.x && block.segments[0].position.y === k.position.y) ? 0 : 1
-        this.updateBoard(Update.DELETE, block.id,
-          block.segments[segIndex].position.x,
-          block.segments[segIndex].position.y,
-          block.segments[segIndex].color)
+        const segment = block.segments[segIndex]
+        // Animation
+        if (segment.frame < segment.numOfFrames * segment.frequency) {
+          const frameName = `explosion-${Math.floor(segment.frame / (segment.numOfFrames * segment.frequency))}`
+          this.updateBoard(Update.ANIMATION, block.id,
+            segment.position.x,
+            segment.position.y,
+            segment.color,
+            frameName
+          )
+          segment.frame++
+        } else { // Delete
+          this.updateBoard(Update.DELETE, block.id,
+            segment.position.x,
+            segment.position.y,
+            segment.color)
 
-        block.segments.splice(segIndex, 1)
+          block.segments.splice(segIndex, 1)
+          clearMap.push(k)
+        }
       } else {
         const virus = this.viruses.get(v)
         if (typeof virus !== 'undefined') {
-          this.updateBoard(Update.DELETE, v, virus.position.x,
-            virus.position.y)
-          this.setScore(100)
-          this.viruses.delete(v)
+          // Animation
+          if (virus.frame < virus.numOfFrames * virus.frequency) {
+            virus.frame++
+          } else { // Delete
+            this.updateBoard(Update.DELETE, v, virus.position.x,
+              virus.position.y)
+            this.setScore(100)
+            this.viruses.delete(v)
+            clearMap.push(k)
+          }
         }
       }
     })
 
-    return toDeleteMap.size > 3
+    clearMap.forEach((e) => {
+      if (this.toDelete.get(e) === this.elementInControl.id) {
+        this.spawnNewBlock()
+      }
+      this.toDelete.delete(e)
+    })
   }
 
   private setScore (delta: number): void {
@@ -589,7 +749,13 @@ class Game {
 
   private spawnVirus (x: number, y: number, virusIndex: number, color: string): void {
     const virusId = (virusIndex + 1) * -1
-    const segment: Segment = { position: new Vector2(x, y), color }
+    const segment: Segment = {
+      position: new Vector2(x, y),
+      color,
+      frame: 0,
+      frequency: 5,
+      numOfFrames: 4
+    }
     this.updateBoard(Update.ADD, virusId, x, y, color)
     this.viruses.set(virusId, segment)
   }
@@ -605,13 +771,27 @@ class Game {
     }
   }
 
+  private stageComplete (): void {
+    console.log('stage complete')
+    clearInterval(this.loop)
+    const dialog = document.createElement('dialog')
+    dialog.classList.add('spritesheet')
+    dialog.classList.add('dialog')
+    dialog.classList.add('stage-complete')
+    Game.mainDiv.appendChild(dialog)
+    // // @ts-expect-error
+    dialog.open = true
+  }
+
   private gameOver (): void {
     console.log('game over')
     clearInterval(this.loop)
     const dialog = document.createElement('dialog')
     dialog.classList.add('spritesheet')
     dialog.classList.add('dialog')
+    dialog.classList.add('game-over')
     Game.mainDiv.appendChild(dialog)
+    // // @ts-expect-error
     dialog.open = true
   }
 
@@ -635,7 +815,6 @@ class Game {
     }
 
     this.generateViruses()
-    this.debugPrintBoard()
 
     this.loop = setInterval(() => {
       let blockAdded = false
@@ -651,27 +830,42 @@ class Game {
           continue
         }
 
-        if (blockToMove.active) {
-          if (this.canMove(blockToMove, Vector2.down())) {
-            if (blockToMove.id !== this.elementInControl.id || this.frame === 0) {
-              this.move(blockToMove, Vector2.down())
-            }
-          } else {
-            if (this.tryToDestroy(blockToMove)) {
-              for (const [_, value] of this.blocks) {
-                value.active = true
+        switch (this.state) {
+          case State.PLAYING:
+            if (blockToMove.active) {
+              if (this.canMove(blockToMove, Vector2.down())) {
+                if (blockToMove.id !== this.elementInControl.id || this.frame === 0) {
+                  this.move(blockToMove, Vector2.down())
+                } else if (blockToMove.id === this.elementInControl.id && this.buttonDown) {
+                  this.move(this.elementInControl, Vector2.down())
+                }
+              } else {
+                if (this.tryToDestroy(blockToMove)) {
+                  this.state = State.ANIMATION
+                  for (const [_, value] of this.blocks) {
+                    value.active = true
+                  }
+                } else {
+                  blockToMove.active = false
+                  if (blockToMove.id === this.elementInControl.id && !blockAdded) {
+                    this.spawnNewBlock()
+                    blockAdded = true
+                  }
+                }
               }
-            } else {
-              blockToMove.active = false
-            }
-            if (blockToMove.id === this.elementInControl.id && !blockAdded) {
+            } else if (blockToMove.id === this.elementInControl.id && !blockAdded) {
               this.spawnNewBlock()
               blockAdded = true
             }
-          }
-        } else if (blockToMove.id === this.elementInControl.id && !blockAdded) {
-          this.spawnNewBlock()
-          blockAdded = true
+            break
+          case State.ANIMATION:
+            this.destroy()
+            if (this.toDelete.size === 0) {
+              this.state = State.PLAYING
+            }
+            break
+          default:
+            break
         }
       }
       this.frame = (this.frame + 1) % 5

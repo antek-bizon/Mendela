@@ -16,6 +16,9 @@ export enum Rotation {
 export interface Segment {
   position: Vector2
   color: string
+  frame: number
+  numOfFrames: number
+  frequency: number
 }
 
 /**
