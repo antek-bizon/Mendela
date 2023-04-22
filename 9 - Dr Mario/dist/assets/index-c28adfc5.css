@@ -33,7 +33,7 @@ table {
 }
 
 .spritesheet {
-    background-image: url(../spritesheet.png)
+    background-image: url('../spritesheet.png')
 }
 
 .letter {
@@ -84,15 +84,15 @@ table {
 }
 
 .virus-red {
-    background-image: url(../covid_brown.png)
+    background-image: url('../covid_brown.png')
 }
 
 .virus-blue {
-    background-image: url(../covid_blue.png)
+    background-image: url('../covid_blue.png')
 }
 
 .virus-green {
-    background-image: url(../covid_yellow.png)
+    background-image: url('../covid_yellow.png')
 }
 
 .red- {
@@ -126,7 +126,7 @@ table {
     z-index: 1;
     top: 62px;
     left: 496px;
-    background-image: url(../hand.png);
+    background-image: url('../hand.png');
     background-size: 75px;
     background-repeat: no-repeat;
     width: 18px;
