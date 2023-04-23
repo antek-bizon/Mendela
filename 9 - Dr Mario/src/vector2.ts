@@ -1,10 +1,18 @@
 /**
- * Class holding x and y as numbers.
+ * Interface for holding x and y
+ */
+interface IVector2 {
+  x: number
+  y: number
+}
+
+/**
+ * Class implementing IVector2.
  *
- * It implements helper functions for calculating.
+ * It contains helper functions for calculating.
  */
 
-export default class Vector2 {
+export default class Vector2 implements IVector2 {
   x: number
   y: number
   constructor (x: number = 0, y: number = 0) {
@@ -84,7 +92,7 @@ export default class Vector2 {
 
   /**
    * Subtract exisiting vector from the given vector
-   * 
+   *
    * @param vector vector from with you want to take values
    */
   subtractVec (vector: Vector2): void {

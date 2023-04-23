@@ -16,6 +16,12 @@ export enum Rotation {
 export interface Segment {
   position: Vector2
   color: string
+}
+
+/**
+ * Interface extending Vector2 with animation fields.
+ */
+export interface SegmentWithAnimation extends Segment {
   frame: number
   numOfFrames: number
   frequency: number
@@ -30,7 +36,7 @@ export interface Segment {
  */
 export interface Block {
   id: number
-  segments: Segment[]
+  segments: SegmentWithAnimation[]
   angle: Rotation
   active: boolean
 }

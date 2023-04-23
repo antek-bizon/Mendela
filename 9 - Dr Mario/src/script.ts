@@ -1,5 +1,5 @@
 import Vector2 from './vector2'
-import { Segment, Block, Rotation } from './block'
+import { Segment, Block, Rotation, SegmentWithAnimation } from './block'
 import Animation from './animation'
 
 /**
@@ -61,7 +61,7 @@ class Game {
   private scoreCounter: number = 0
   private recordCounter: number = 0
   /** A map containg viruses. Access to the virus is via virus's id */
-  private readonly viruses: Map<number, Segment> = new Map()
+  private readonly viruses: Map<number, SegmentWithAnimation> = new Map()
   private virusCount: number = 4
   /** An array that contains all avialable colors in a game. */
   private readonly colors: string[] = ['red', 'blue', 'green']
@@ -323,7 +323,7 @@ class Game {
   }
 
   private generateNewBlock (): Block {
-    const segments: Segment[] = [
+    const segments: SegmentWithAnimation[] = [
       {
         position: new Vector2(Math.floor(Game.boardWidth / 2) - 1, 0),
         color: this.randomColor(),
@@ -749,7 +749,7 @@ class Game {
 
   private spawnVirus (x: number, y: number, virusIndex: number, color: string): void {
     const virusId = (virusIndex + 1) * -1
-    const segment: Segment = {
+    const segment: SegmentWithAnimation = {
       position: new Vector2(x, y),
       color,
       frame: 0,
@@ -861,7 +861,15 @@ class Game {
           case State.ANIMATION:
             this.destroy()
             if (this.toDelete.size === 0) {
-              this.state = State.PLAYING
+              this.state = State.ADDING
+            }
+            break
+          case State.ADDING:
+            if (blockToMove.active &&
+              this.canMove(blockToMove, Vector2.down())) {
+              if (blockToMove.id !== this.elementInControl.id) {
+                this.move(blockToMove, Vector2.down())
+              }
             }
             break
           default:
