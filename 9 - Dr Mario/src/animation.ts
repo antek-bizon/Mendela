@@ -3,7 +3,7 @@ import Vector2 from './vector2'
 export default class Animation {
   static readonly imgSrc = '/spritesheet.png'
   private timeout: number = 0
-  private readonly frequency: number = 5
+  private readonly frequency: number = 7
   private frame: number = 0
   private readonly framesInTotal: number
   private readonly size: Vector2

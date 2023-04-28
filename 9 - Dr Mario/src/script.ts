@@ -8,12 +8,14 @@ import Animation from './animation'
 enum Update {
   ADD = 0,
   DELETE,
-  ANIMATION
+  UPDATE,
+  EXPLOSION
 }
 
 enum State {
   PLAYING,
-  ANIMATION,
+  DESTROYING,
+  FALLING,
   ADDING
 }
 
@@ -71,10 +73,12 @@ class Game {
   private frame = 0
 
   private buttonDown: boolean = false
-  private state: State = State.PLAYING
+  private state: State = State.ADDING
   private toDelete: Map<Segment, number> = new Map()
-  private readonly hand: HTMLDivElement[]
+  private readonly hand: HTMLDivElement
+  private readonly pillHand: HTMLDivElement
   private nextBlock: Block
+  private spawnBlock: boolean = false
 
   /**
    * Creates a new Game object.
@@ -93,8 +97,12 @@ class Game {
     document.body.append(Game.mainDiv)
 
     this.staticAnimations = this.createStaticAnimations()
-    this.hand = this.createPillHand()
-    this.hand.forEach(e => Game.mainDiv.append(e))
+    const [pillHand, hand] = this.createPillHand()
+    this.hand = hand
+    Game.mainDiv.append(this.hand)
+    this.pillHand = pillHand
+    Game.mainDiv.append(this.pillHand)
+
     this.nextBlock = this.generateNewBlock()
 
     this.createVirusCounter()
@@ -180,10 +188,13 @@ class Game {
     return [board, boardHTML]
   }
 
-  private createPillHand (): HTMLDivElement[] {
+  private createPillHand (): [HTMLDivElement, HTMLDivElement] {
+    const pill = document.createElement('div')
+    pill.append(document.createElement('div'))
+    pill.append(document.createElement('div'))
+
     return [
-      document.createElement('div'),
-      document.createElement('div'),
+      pill,
       document.createElement('div')
     ]
   }
@@ -328,26 +339,26 @@ class Game {
         position: new Vector2(Math.floor(Game.boardWidth / 2) - 1, 0),
         color: this.randomColor(),
         frame: 0,
-        frequency: 5,
         numOfFrames: 4
       },
       {
         position: new Vector2(Math.floor(Game.boardWidth / 2), 0),
         color: this.randomColor(),
         frame: 0,
-        frequency: 5,
         numOfFrames: 4
       }
     ]
 
-    for (let i = 0; i < segments.length; i++) {
-      this.hand[i].className = 'cell'
-      this.hand[i].classList.add('spritesheet')
-      this.hand[i].classList.add(`pill-hand-${i + 1}`)
-      this.hand[i].classList.add(`${segments[i].color}-`)
-    }
+    this.pillHand.childNodes.forEach((e, i) => {
+      const div = e as HTMLDivElement
+      const kind = (i === 0) ? 1 : 3
+      div.className = 'cell'
+      div.classList.add('spritesheet')
+      div.classList.add(`${segments[i].color}-${kind}`)
+    })
 
-    this.hand[2].className = 'hand'
+    this.pillHand.className = 'pill-hand'
+    this.hand.className = 'hand'
 
     return {
       id: this.nextId,
@@ -362,6 +373,7 @@ class Game {
    */
   private spawnNewBlock (): void {
     this.buttonDown = false
+    this.spawnBlock = false
 
     this.elementInControl = this.nextBlock
 
@@ -373,25 +385,22 @@ class Game {
     }
 
     this.blocks.set(this.nextId++, this.elementInControl)
-    for (let i = 0; i < this.elementInControl.segments.length; i++) {
-      this.hand[i].classList.add(`pill-animation-${i + 1}`)
-    }
 
-    this.hand[2].classList.add('hand-animation')
-
-    this.state = State.ADDING
+    this.pillHand.classList.add('pill-animation')
+    this.hand.classList.add('hand-animation')
 
     setTimeout(() => {
       this.state = State.PLAYING
       for (let i = 0; i < this.elementInControl.segments.length; i++) {
+        const kind = this.pillKind(this.elementInControl, i)
         this.updateBoard(Update.ADD,
           this.elementInControl.id,
           this.elementInControl.segments[i].position.x,
           this.elementInControl.segments[i].position.y,
-          this.elementInControl.segments[i].color)
+          this.elementInControl.segments[i].color, kind)
         this.nextBlock = this.generateNewBlock()
       }
-    }, 1800)
+    }, 1600)
   }
 
   /**
@@ -439,7 +448,8 @@ class Game {
 
     for (let i = 0; i < e.segments.length; i++) {
       e.segments[i].position.addVec(vector)
-      this.updateBoard(Update.ADD, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color)
+      const kind = this.pillKind(e, i)
+      this.updateBoard(Update.ADD, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color, kind)
     }
   }
 
@@ -502,6 +512,20 @@ class Game {
     return angle + 1
   }
 
+  private pillKind (e: Block, i: number): string {
+    let kind = ''
+    if (e.segments.length > 1) {
+      let angle = e.angle + 1
+
+      if (i > 0) {
+        angle = (angle + 1) % 4 + 1
+      }
+
+      kind = (angle % 5).toString()
+    }
+    return kind
+  }
+
   private rotate (e: Block, reversed: boolean = false): void {
     for (let i = 0; i < e.segments.length; i++) {
       this.updateBoard(Update.DELETE, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color)
@@ -524,7 +548,8 @@ class Game {
     }
 
     for (let i = 0; i < e.segments.length; i++) {
-      this.updateBoard(Update.ADD, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color)
+      const kind = this.pillKind(e, i)
+      this.updateBoard(Update.ADD, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color, kind)
     }
   }
 
@@ -542,15 +567,24 @@ class Game {
       case Update.DELETE:
         this.board[y][x] = 0
         this.boardHTML.rows[y].cells[x].className = 'cell'
-        // this.boardHTML.rows[y].cells[x].innerText = ''
         break
-      case Update.ANIMATION:
+      case Update.UPDATE:
+        this.board[y][x] = id
         this.boardHTML.rows[y].cells[x].className = 'cell'
+        this.boardHTML.rows[y].cells[x].classList.add('spritesheet')
         if (id > 0) {
-          this.boardHTML.rows[y].cells[x].classList.add('spritesheet')
           this.boardHTML.rows[y].cells[x].classList.add(`${color}-${kind}`)
         } else {
           this.boardHTML.rows[y].cells[x].classList.add(`virus-${color}`)
+        }
+        break
+      case Update.EXPLOSION:
+        this.boardHTML.rows[y].cells[x].className = 'cell'
+        this.boardHTML.rows[y].cells[x].classList.add('spritesheet')
+        if (id > 0) {
+          this.boardHTML.rows[y].cells[x].classList.add(`${color}-explosion`)
+        } else {
+          this.boardHTML.rows[y].cells[x].classList.add(`virus-${color}-explosion`)
         }
         break
       default:
@@ -660,13 +694,11 @@ class Game {
         const segIndex = (block.segments[0].position.x === k.position.x && block.segments[0].position.y === k.position.y) ? 0 : 1
         const segment = block.segments[segIndex]
         // Animation
-        if (segment.frame < segment.numOfFrames * segment.frequency) {
-          const frameName = `explosion-${Math.floor(segment.frame / (segment.numOfFrames * segment.frequency))}`
-          this.updateBoard(Update.ANIMATION, block.id,
+        if (segment.frame < segment.numOfFrames) {
+          this.updateBoard(Update.EXPLOSION, block.id,
             segment.position.x,
             segment.position.y,
-            segment.color,
-            frameName
+            segment.color
           )
           segment.frame++
         } else { // Delete
@@ -682,7 +714,12 @@ class Game {
         const virus = this.viruses.get(v)
         if (typeof virus !== 'undefined') {
           // Animation
-          if (virus.frame < virus.numOfFrames * virus.frequency) {
+          if (virus.frame < virus.numOfFrames) {
+            this.updateBoard(Update.EXPLOSION, v,
+              virus.position.x,
+              virus.position.y,
+              virus.color
+            )
             virus.frame++
           } else { // Delete
             this.updateBoard(Update.DELETE, v, virus.position.x,
@@ -697,7 +734,8 @@ class Game {
 
     clearMap.forEach((e) => {
       if (this.toDelete.get(e) === this.elementInControl.id) {
-        this.spawnNewBlock()
+        // this.spawnNewBlock()
+        this.spawnBlock = true
       }
       this.toDelete.delete(e)
     })
@@ -753,7 +791,6 @@ class Game {
       position: new Vector2(x, y),
       color,
       frame: 0,
-      frequency: 5,
       numOfFrames: 4
     }
     this.updateBoard(Update.ADD, virusId, x, y, color)
@@ -761,7 +798,6 @@ class Game {
   }
 
   private generateViruses (): void {
-    console.log(this.virusCount)
     for (let i = 0; i < this.virusCount; i++) {
       const [x, y] = this.findFreeSpace()
       const color = this.randomColor()
@@ -817,67 +853,77 @@ class Game {
     this.generateViruses()
 
     this.loop = setInterval(() => {
-      let blockAdded = false
+      let nextState = this.state
+      let anyBlockActive = false
 
       this.staticAnimations.forEach(e => e.update())
 
-      const keys = this.blocks.keys()
-      for (const key of keys) {
-        const blockToMove = this.blocks.get(key)
-        if (typeof blockToMove === 'undefined') continue
-        if (blockToMove.segments.length === 0) {
-          this.blocks.delete(key)
-          continue
-        }
+      switch (this.state) {
+        case State.PLAYING:
+          if (this.frame !== 0 && !this.buttonDown) break
 
-        switch (this.state) {
-          case State.PLAYING:
+          if (this.canMove(this.elementInControl, Vector2.down())) {
+            this.move(this.elementInControl, Vector2.down())
+          } else if (this.tryToDestroy(this.elementInControl)) {
+            nextState = State.DESTROYING
+            this.blocks.forEach((v) => { v.active = true })
+          } else {
+            this.elementInControl.active = false
+            this.spawnBlock = true
+            nextState = State.ADDING
+          }
+          break
+        case State.DESTROYING:
+          this.destroy()
+          if (this.toDelete.size === 0) {
+            nextState = State.FALLING
+          }
+          break
+        case State.FALLING:
+          for (const key of this.blocks.keys()) {
+            const blockToMove = this.blocks.get(key)
+            if (typeof blockToMove === 'undefined') continue
+
+            if (blockToMove.segments.length === 0) {
+              this.blocks.delete(key)
+              continue
+            } else if (blockToMove.segments.length === 1) {
+              this.updateBoard(Update.UPDATE,
+                blockToMove.id,
+                blockToMove.segments[0].position.x,
+                blockToMove.segments[0].position.y,
+                blockToMove.segments[0].color
+              )
+            }
+
             if (blockToMove.active) {
               if (this.canMove(blockToMove, Vector2.down())) {
-                if (blockToMove.id !== this.elementInControl.id || this.frame === 0) {
-                  this.move(blockToMove, Vector2.down())
-                } else if (blockToMove.id === this.elementInControl.id && this.buttonDown) {
-                  this.move(this.elementInControl, Vector2.down())
-                }
-              } else {
-                if (this.tryToDestroy(blockToMove)) {
-                  this.state = State.ANIMATION
-                  for (const [_, value] of this.blocks) {
-                    value.active = true
-                  }
-                } else {
-                  blockToMove.active = false
-                  if (blockToMove.id === this.elementInControl.id && !blockAdded) {
-                    this.spawnNewBlock()
-                    blockAdded = true
-                  }
-                }
-              }
-            } else if (blockToMove.id === this.elementInControl.id && !blockAdded) {
-              this.spawnNewBlock()
-              blockAdded = true
-            }
-            break
-          case State.ANIMATION:
-            this.destroy()
-            if (this.toDelete.size === 0) {
-              this.state = State.ADDING
-            }
-            break
-          case State.ADDING:
-            if (blockToMove.active &&
-              this.canMove(blockToMove, Vector2.down())) {
-              if (blockToMove.id !== this.elementInControl.id) {
                 this.move(blockToMove, Vector2.down())
+                anyBlockActive = true
+              } else if (this.tryToDestroy(blockToMove)) {
+                nextState = State.DESTROYING
+              } else {
+                blockToMove.active = false
               }
             }
-            break
-          default:
-            break
-        }
+          }
+          if (nextState === State.DESTROYING) {
+            this.blocks.forEach((v) => { v.active = true })
+          } else if (!anyBlockActive) {
+            nextState = State.ADDING
+          }
+          break
+        case State.ADDING:
+          if (this.spawnBlock) {
+            this.spawnNewBlock()
+          }
+          break
+        default:
+          break
       }
       this.frame = (this.frame + 1) % 5
-    }, 100)
+      this.state = nextState
+    }, 70)
   }
 }
 

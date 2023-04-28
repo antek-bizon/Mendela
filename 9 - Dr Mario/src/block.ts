@@ -24,7 +24,6 @@ export interface Segment {
 export interface SegmentWithAnimation extends Segment {
   frame: number
   numOfFrames: number
-  frequency: number
 }
 
 /**

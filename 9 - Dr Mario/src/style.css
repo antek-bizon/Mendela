@@ -99,26 +99,60 @@ table {
     background-position-x: -1720px;
 }
 
+.red-1 {
+    background-position-x: -1752px;
+}
+
+.red-2 {
+    background-position-x: -1800px;
+}
+
+.red-3 {
+    background-position-x: -1784px;
+}
+
+.red-4 {
+    background-position-x: -1736px;
+}
+
 .blue- {
     background-position-x: -1608px;
+}
+
+.blue-1 {
+    background-position-x: -1640px;
+}
+
+.blue-2 {
+    background-position-x: -1688px;
+}
+
+.blue-3 {
+    background-position-x: -1672px;
+}
+
+.blue-4 {
+    background-position-x: -1624px;
 }
 
 .green- {
     background-position-x: -3445px;
 }
 
-.pill-animation-1 {
-    animation-duration: 1.8s;
-    animation-name: pill-animation-1;
-    animation-direction: normal;
-    animation-timing-function: steps(3, end);
+.green-1 {
+    background-position-x: -3477px;
 }
 
-.pill-animation-2 {
-    animation-duration: 1.8s;
-    animation-name: pill-animation-2;
-    animation-direction: normal;
-    animation-timing-function: steps(3, end);
+.green-2 {
+    background-position-x: -3525px;
+}
+
+.green-3 {
+    background-position-x: -3509px;
+}
+
+.green-4 {
+    background-position-x: -3461px;
 }
 
 .hand {
@@ -166,69 +200,73 @@ table {
     }
 }
 
-.pill-hand-2 {
+.pill-hand {
     position: absolute;
-    top: 50px;
-    left: 495px;
-}
-
-.pill-hand-1 {
-    position: absolute;
+    display: flex;
     top: 50px;
     left: 479px;
 }
 
+.pill-animation {
+    animation-duration: 1.6s;
+    animation-name: pill-animation;
+    animation-direction: normal;
+    animation-timing-function: steps(3, end);
+}
 
-@keyframes pill-animation-1 {
+
+@keyframes pill-animation {
     20% {
-        top: 30px;
-        left: 445px;
+        top: 15px;
+        left: 460px;
+        rotate: 90deg;
     }
 
     40% {
-        top: 10px;
-        left: 400px;
+        top: 0px;
+        left: 415px;
+        rotate: 180deg;
     }
 
     60% {
-        top: 15px;
+        top: 10px;
         left: 360px;
+        rotate: 270deg;
     }
 
     80% {
         top: 30px;
         left: 330px;
+        rotate: 360deg;
     }
 
     to {
         top: 100px;
-        left: 320px
+        left: 320px;
+        rotate: 360deg;
     }
 }
 
-@keyframes pill-animation-2 {
-    20% {
-        top: 30px;
-        left: 460px;
-    }
+.red-explosion {
+    background-position-x: -1768px;
+}
 
-    40% {
-        top: 10px;
-        left: 415px;
-    }
+.blue-explosion {
+    background-position-x: -1656px;
+}
 
-    60% {
-        top: 15px;
-        left: 375px;
-    }
+.green-explosion {
+    background-position-x: -3493px;
+}
 
-    80% {
-        top: 30px;
-        left: 345px;
-    }
+.virus-red-explosion {
+    background-position-x: -1816px;
+}
 
-    to {
-        top: 100px;
-        left: 335px
-    }
+.virus-blue-explosion {
+    background-position-x: -1704px;
+}
+
+.virus-green-explosion {
+    background-position-x: -3541px;
 }
