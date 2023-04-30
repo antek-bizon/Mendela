@@ -12,6 +12,9 @@ enum Update {
   EXPLOSION
 }
 
+/**
+ * Flag for indicating a current state.
+ */
 enum State {
   PLAYING,
   DESTROYING,
@@ -59,32 +62,37 @@ class Game {
   private loop: number = -1
   /** An id that will be given for the next added block. */
   private nextId = 1
-  /** Variables for holding scores. */
+  /** Variable for holding a current score. */
   private scoreCounter: number = 0
+  /** Variable for holding a record score. */
   private recordCounter: number = 0
   /** A map containg viruses. Access to the virus is via virus's id */
   private readonly viruses: Map<number, SegmentWithAnimation> = new Map()
+  /** A current number of viruses. */
   private virusCount: number = 4
   /** An array that contains all avialable colors in a game. */
   private readonly colors: string[] = ['red', 'blue', 'green']
-
+  /** An array with static animations. */
   private readonly staticAnimations: Animation[]
-
+  /** A frame counter. */
   private frame = 0
-
+  /** A flag for indicating that down button was pressed. */
   private buttonDown: boolean = false
+  /** A current state of the game. */
   private state: State = State.ADDING
+  /** An array holding elements to delete .*/
   private toDelete: Map<Segment, number> = new Map()
+  /** A HTML div that is an animated hand. */
   private readonly hand: HTMLDivElement
+  /** A HTML div that is an animated pill. */
   private readonly pillHand: HTMLDivElement
+  /** A variable for holding next block. */
   private nextBlock: Block
+  /** A flag indicating if a block should be spawned. */
   private spawnBlock: boolean = false
 
   /**
    * Creates a new Game object.
-   *
-   * @param width sets boardWidth.
-   * @param height sets boardHeight.
    */
   constructor () {
     console.log('Game start')
@@ -231,6 +239,12 @@ class Game {
     return zeros + score
   }
 
+  /**
+   * Converts score to images.
+   * 
+   * @param score the score to convert to images.
+   * @returns images of numbers.
+   */
   private convertToImages (score: string): HTMLDivElement[] {
     const images = [] as HTMLDivElement[]
     for (let i = 0; i < score.length; i++) {
@@ -242,6 +256,12 @@ class Game {
     return images
   }
 
+  /**
+   * Updates a score counter.
+   * 
+   * @param div HTML element to update.
+   * @param score the number that div should be set to.
+   */
   private updateScoreDiv (div: HTMLDivElement, score: number): void {
     div.innerHTML = ''
     this.convertToImages(this.addZerosToScore(
@@ -250,6 +270,9 @@ class Game {
     })
   }
 
+  /**
+   * Creates a counter for viruses.
+   */
   private createVirusCounter (): void {
     const virusCounter = document.createElement('div')
     virusCounter.id = 'virusCounter'
@@ -259,6 +282,9 @@ class Game {
     Game.mainDiv.append(virusCounter)
   }
 
+  /**
+   * Updates the virus counter.
+   */
   private updateVirusCounter (): void {
     this.virusCount--
     const virusCounter = document.getElementById('virusCounter')
@@ -272,6 +298,11 @@ class Game {
     }
   }
 
+  /**
+   * Creates static animations.
+   * 
+   * @returns an array with animations.
+   */
   private createStaticAnimations (): Animation[] {
     const animations: Animation[] = [
       {
@@ -333,6 +364,11 @@ class Game {
     return 'violet' // It signals something went wrong
   }
 
+  /**
+   * Generates a new block.
+   * 
+   * @returns a new block
+   */
   private generateNewBlock (): Block {
     const segments: SegmentWithAnimation[] = [
       {
@@ -441,6 +477,12 @@ class Game {
     return true
   }
 
+  /**
+   * Moves a block by a given vector.
+   * 
+   * @param e block to move.
+   * @param vector a movement vector.
+   */
   private move (e: Block, vector: Vector2): void {
     for (let i = 0; i < e.segments.length; i++) {
       this.updateBoard(Update.DELETE, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color)
@@ -453,6 +495,12 @@ class Game {
     }
   }
 
+  /**
+   * Checks if a block can be rotated.
+   * 
+   * @param e block to check.
+   * @returns true if is is possible to rotate | false if it isn't possible.
+   */
   private canRotate (e: Block): boolean {
     let freeSpace = true
     for (let i = 0; i < e.segments.length; i++) {
@@ -475,6 +523,13 @@ class Game {
     return true
   }
 
+  /**
+   * Returns a vector for a given angle.
+   * 
+   * @param angle current angle of a block.
+   * @param reversed a rotate direction.
+   * @returns an array with vector for each segment of a block.
+   */
   private rotateVector (angle: Rotation, reversed = false): Vector2[] {
     switch (angle) {
       case Rotation.DEG0:
@@ -499,6 +554,13 @@ class Game {
     return [new Vector2(), new Vector2()]
   }
 
+  /**
+   * Next angle of a block.
+   * 
+   * @param angle current angle.
+   * @param reversed a rotate direction.
+   * @returns next angle.
+   */
   private nextAngle (angle: Rotation, reversed: boolean): Rotation {
     if (reversed) {
       if (angle === Rotation.DEG0) {
@@ -512,6 +574,13 @@ class Game {
     return angle + 1
   }
 
+  /**
+   * Get a pill's spritesheet kind.
+   * 
+   * @param e block to check.
+   * @param i index of a segment.
+   * @returns a pill's spritesheet kind.
+   */
   private pillKind (e: Block, i: number): string {
     let kind = ''
     if (e.segments.length > 1) {
@@ -526,6 +595,12 @@ class Game {
     return kind
   }
 
+  /**
+   * Rotates a block.
+   * 
+   * @param e block to rotate.
+   * @param reversed a rotate direction.
+   */
   private rotate (e: Block, reversed: boolean = false): void {
     for (let i = 0; i < e.segments.length; i++) {
       this.updateBoard(Update.DELETE, e.id, e.segments[i].position.x, e.segments[i].position.y, e.segments[i].color)
@@ -553,6 +628,16 @@ class Game {
     }
   }
 
+  /**
+   * Updates the HTML board.
+   * 
+   * @param operation operation to perform.
+   * @param id block's id.
+   * @param x x position of a block's segment.
+   * @param y y position of a block's segment.
+   * @param color color of a block's segment.
+   * @param kind kind of a block's segment.
+   */
   private updateBoard (operation: Update, id: number, x: number, y: number, color: string = '', kind: string = ''): void {
     switch (operation) {
       case Update.ADD:
@@ -592,6 +677,11 @@ class Game {
     }
   }
 
+  /**
+   * Removes to small arrays from the array.
+   * 
+   * @param toDelete an array to check.
+   */
   private eliminateToSmall (toDelete: SegWithId[][]): void {
     for (let i = 0; i < toDelete.length; i++) {
       if (toDelete[i].length < 4) {
@@ -600,6 +690,13 @@ class Game {
     }
   }
 
+  /**
+   * Resets the array for the next check.
+   * 
+   * @param toDelete an array to check.
+   * @param index a current index that is modified of the array.
+   * @returns next index to modify.
+   */
   private resetForNextCheck (toDelete: SegWithId[][], index: number): number {
     if (toDelete[index].length >= 4) {
       toDelete.push([])
@@ -610,6 +707,12 @@ class Game {
     return index
   }
 
+  /**
+   * Check rows for blocks.
+   * 
+   * @param y a row index.
+   * @returns an array with segments and ids.
+   */
   private checkRow (y: number): SegWithId[][] {
     const toDelete: SegWithId[][] = []
     toDelete.push([])
@@ -634,6 +737,12 @@ class Game {
     return toDelete
   }
 
+  /**
+   * Checks column for blocks.
+   * 
+   * @param x a column index.
+   * @returns an array with segments and ids.
+   */
   private checkColumn (x: number): SegWithId[][] {
     const toDelete: SegWithId[][] = []
     toDelete.push([])
@@ -666,6 +775,12 @@ class Game {
     return toDelete
   }
 
+  /**
+   * Tries to destroy blocks.
+   * 
+   * @param elementToCheck a block to check.
+   * @returns true if you can destroy the block.
+   */
   private tryToDestroy (elementToCheck: Block): boolean {
     const toDeleteMap = new Map() as Map<Segment, number>
     for (const segment of elementToCheck.segments) {
@@ -686,6 +801,9 @@ class Game {
     return toDeleteMap.size > 3
   }
 
+  /**
+   * Destroys blocks.
+   */
   private destroy (): void {
     const clearMap: Segment[] = []
     this.toDelete.forEach((v, k) => {
@@ -741,6 +859,11 @@ class Game {
     })
   }
 
+  /**
+   * Sets a score.
+   * 
+   * @param delta by how much score is increased.
+   */
   private setScore (delta: number): void {
     this.scoreCounter += delta
     const scoreImgs = document.getElementById('scoreImgs') as HTMLDivElement
@@ -757,6 +880,11 @@ class Game {
     }
   }
 
+  /**
+   * Find a free space on a board.
+   * 
+   * @returns x and y positions.
+   */
   private findFreeSpace (): [number, number] {
     const yStart = Math.floor(Math.random() * (Game.boardHeight - 8)) + 5
     const xStart = Math.floor(Math.random() * (Game.boardWidth - 1))
@@ -785,6 +913,14 @@ class Game {
     return [-1, -1]
   }
 
+  /**
+   * Spawns a virus.
+   * 
+   * @param x a coordinate.
+   * @param y a coordinate.
+   * @param virusIndex a virus index.
+   * @param color a color of the virus.
+   */
   private spawnVirus (x: number, y: number, virusIndex: number, color: string): void {
     const virusId = (virusIndex + 1) * -1
     const segment: SegmentWithAnimation = {
@@ -797,6 +933,9 @@ class Game {
     this.viruses.set(virusId, segment)
   }
 
+  /**
+   * Generates viruses.
+   */
   private generateViruses (): void {
     for (let i = 0; i < this.virusCount; i++) {
       const [x, y] = this.findFreeSpace()
@@ -807,6 +946,9 @@ class Game {
     }
   }
 
+  /**
+   * Displays a dialog with a message.
+   */
   private stageComplete (): void {
     console.log('stage complete')
     clearInterval(this.loop)
@@ -819,6 +961,9 @@ class Game {
     dialog.open = true
   }
 
+  /**
+   * Displays a dialog with a message.
+   */
   private gameOver (): void {
     console.log('game over')
     clearInterval(this.loop)
@@ -831,6 +976,9 @@ class Game {
     dialog.open = true
   }
 
+  /**
+   * Prints a board in a console.
+   */
   debugPrintBoard (): void {
     for (let i = 0; i < Game.boardHeight; i++) {
       let row = ''
@@ -841,6 +989,9 @@ class Game {
     }
   }
 
+  /**
+   * Starts the game.
+   */
   mainLoop (): void {
     if (this.loop !== -1) {
       clearInterval(this.loop)
