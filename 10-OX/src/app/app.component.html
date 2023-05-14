@@ -1,0 +1,40 @@
+<div>
+  <div [ngClass]="{'menu': 'true'}">
+    <table>
+      <tr>
+        <td><label for="rows">Rows:</label></td>
+        <td><input type="number" id="rows" #rows /></td>
+      </tr>
+      <tr>
+        <td><label for="cols">Columns:</label></td>
+        <td><input type="number" id="cols" #cols /></td>
+      </tr>
+      <tr>
+        <td><label for="win">How many to win:</label></td>
+        <td><input type="number" id="win" #win></td>
+      </tr>
+      <tr>
+        <td [class.center]="true" [colSpan]="2"><button
+            (click)="startGame(rows.value, cols.value, win.value)">Start</button></td>
+      </tr>
+    </table>
+    <table>
+      <tr>
+        <td>Player points:</td>
+        <td>{{playerWins}}</td>
+      </tr>
+      <tr>
+        <td>Computer points:</td>
+        <td>{{computerWins}}</td>
+      </tr>
+    </table>
+  </div>
+
+  <table [ngClass]="{'board': 'true'}">
+    <tr *ngFor="let row of tableData; index as i">
+      <td *ngFor="let cell of row; index as j" (click)="makeAMove(i, j)" [ngStyle]="{ 'text-align': 'center' }">
+        {{ cell }}
+      </td>
+    </tr>
+  </table>
+</div>

@@ -1,0 +1,29 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.board {
+    margin: 0 auto;
+}
+
+.board td {
+    border: 1px solid black;
+    width: 25px;
+    height: 25px;
+}
+
+.board td::selection {
+    background-color: transparent;
+}
+
+.center {
+    text-align: center;
+}
+
+.menu {
+    display: flex;
+    gap: 25px;
+    margin: 20px;
+}
