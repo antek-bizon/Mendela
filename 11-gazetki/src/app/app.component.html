@@ -1,0 +1,64 @@
+<main>
+    <section>
+        <div *ngIf="inputValue !== correctValue; else elseBlock">
+            <p>Wpisz zarobiki z poprzedniego roku:
+                <input type="password" (input)="numberOnly($event)">
+                EUR
+            </p>
+            <p>I tak widzimy, ze Twoje zarobki to: {{inputValue | currency:'EUR':'symbol':'1.0-3'}}</p>
+        </div>
+        <ng-template #elseBlock>
+            <div *ngIf="selectedMagazine < 0; else displayMagazine">
+                <div [ngClass]="'column'">
+                    <img [ngClass]="'clickable'" *ngFor="let magazine of magazines; index as i"
+                        (click)="selectMagazine(i)"
+                        src="http://atarionline.pl/biblioteka/czasopisma/img/{{magazine.icon}}" alt="{{magazine.icon}}">
+                </div>
+            </div>
+            <ng-template #displayMagazine>
+                <div [ngClass]="'row'">
+                    <button *ngFor="let year of magazines[selectedMagazine].years" [ngClass]="'clickable'"
+                        [class.active]="year === selectedYear" (click)="selectYear(year)">{{year}}</button>
+                    <button [ngClass]="'clickable'" [class.active]="selectedYear === 'all'"
+                        (click)="selectYear('all')">Wszystkie</button>
+                </div>
+                <button [ngClass]="'clickable'" (click)="selectMagazine(-1)">Cofnij</button>
+                <div *ngIf="selectedYear !== ''">
+                    <table>
+                        <tr>
+                            <th>strona tytułowa</th>
+                            <th>plik</th>
+                            <th>pismo</th>
+                            <th>darczyńcy</th>
+                        </tr>
+                        <tr *ngFor="let issue of magazines[selectedMagazine].issues"
+                            [class.hide]="issue.rok !== selectedYear && selectedYear !== 'all'">
+                            <td>
+                                <img
+                                    src="http://atarionline.pl/biblioteka/czasopisma/{{magazines[selectedMagazine].name}}/{{issue.miniaturka}}">
+                            </td>
+                            <td>
+                                <p>format: <strong>{{issue.format}}</strong></p>
+                                <p>stron: <strong>{{issue.stron}}</strong></p>
+                                <p>plik:: <strong>{{issue.plik}}</strong></p>
+                            </td>
+                            <td>
+                                <p>nazwa: <strong>{{issue.nazwa}}</strong></p>
+                                <p>numer: <strong>{{issue.numer}}</strong></p>
+                                <p>wydawca: <strong>{{issue.wydawca}}</strong></p>
+                            </td>
+                            <td>
+                                <p>skan: <strong>{{issue.skan}}</strong></p>
+                                <p>przetworzenie: <strong>{{issue.przetworzenie}}</strong></p>
+                                <p>podesłał: <strong>{{issue.podeslal}}</strong></p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </ng-template>
+        </ng-template>
+    </section>
+    <aside>
+        <p>{{currentTime | date:'dd-MM-y HH:mm:ss'}}</p>
+    </aside>
+</main>

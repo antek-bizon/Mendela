@@ -1,0 +1,41 @@
+main {
+    display: flex;
+    width: 100%;
+    gap: 30px;
+}
+
+section {
+    width: 70%;
+}
+
+aside {
+    width: 30%;
+}
+
+aside p {
+    text-align: right;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    height: 700px;
+}
+
+.column img {
+    width: 200px;
+    margin: 30px;
+}
+
+.row {
+    display: flex;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.hide {
+    display: none;
+}
