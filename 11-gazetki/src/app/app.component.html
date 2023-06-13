@@ -1,13 +1,14 @@
 <main>
     <section>
         <div *ngIf="inputValue !== correctValue; else elseBlock">
-            <p>Wpisz zarobiki z poprzedniego roku:
+            <p>Wpisz zarobki z poprzedniego roku:
                 <input type="password" (input)="numberOnly($event)">
                 EUR
             </p>
             <p>I tak widzimy, ze Twoje zarobki to: {{inputValue | currency:'EUR':'symbol':'1.0-3'}}</p>
         </div>
         <ng-template #elseBlock>
+            <p>Idealne zarobiki by zrobić dalszą część zadania ;)</p>
             <div *ngIf="selectedMagazine < 0; else displayMagazine">
                 <div [ngClass]="'column'">
                     <img [ngClass]="'clickable'" *ngFor="let magazine of magazines; index as i"
@@ -31,28 +32,29 @@
                             <th>pismo</th>
                             <th>darczyńcy</th>
                         </tr>
-                        <tr *ngFor="let issue of magazines[selectedMagazine].issues"
-                            [class.hide]="issue.rok !== selectedYear && selectedYear !== 'all'">
-                            <td>
-                                <img
-                                    src="http://atarionline.pl/biblioteka/czasopisma/{{magazines[selectedMagazine].name}}/{{issue.miniaturka}}">
-                            </td>
-                            <td>
-                                <p>format: <strong>{{issue.format}}</strong></p>
-                                <p>stron: <strong>{{issue.stron}}</strong></p>
-                                <p>plik:: <strong>{{issue.plik}}</strong></p>
-                            </td>
-                            <td>
-                                <p>nazwa: <strong>{{issue.nazwa}}</strong></p>
-                                <p>numer: <strong>{{issue.numer}}</strong></p>
-                                <p>wydawca: <strong>{{issue.wydawca}}</strong></p>
-                            </td>
-                            <td>
-                                <p>skan: <strong>{{issue.skan}}</strong></p>
-                                <p>przetworzenie: <strong>{{issue.przetworzenie}}</strong></p>
-                                <p>podesłał: <strong>{{issue.podeslal}}</strong></p>
-                            </td>
-                        </tr>
+                        <ng-container *ngFor="let issue of magazines[selectedMagazine].issues">
+                            <tr *ngIf="issue.rok === selectedYear || selectedYear === 'all'">
+                                <td>
+                                    <img
+                                        src="http://atarionline.pl/biblioteka/czasopisma/{{magazines[selectedMagazine].name}}/{{issue.miniaturka}}">
+                                </td>
+                                <td>
+                                    <p>format: <strong>{{issue.format}}</strong></p>
+                                    <p>stron: <strong>{{issue.stron}}</strong></p>
+                                    <p>plik:: <strong>{{issue.plik}}</strong></p>
+                                </td>
+                                <td>
+                                    <p>nazwa: <strong>{{issue.nazwa}}</strong></p>
+                                    <p>numer: <strong>{{issue.numer}}</strong></p>
+                                    <p>wydawca: <strong>{{issue.wydawca}}</strong></p>
+                                </td>
+                                <td>
+                                    <p>skan: <strong>{{issue.skan}}</strong></p>
+                                    <p>przetworzenie: <strong>{{issue.przetworzenie}}</strong></p>
+                                    <p>podesłał: <strong>{{issue.podeslal}}</strong></p>
+                                </td>
+                            </tr>
+                        </ng-container>
                     </table>
                 </div>
             </ng-template>

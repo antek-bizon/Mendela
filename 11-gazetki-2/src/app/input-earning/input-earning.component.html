@@ -1,5 +1,5 @@
 <div *ngIf="numberValue !== correctValue; else elseBlock">
-    <p>Wpisz zarobiki z poprzedniego roku:
+    <p>Wpisz zarobki z poprzedniego roku:
         <input [(ngModel)]="inputValue" type="password" (input)="numberOnly($event)">
         EUR
     </p>

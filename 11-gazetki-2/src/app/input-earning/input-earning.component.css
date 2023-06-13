@@ -2,10 +2,6 @@
     cursor: pointer;
 }
 
-.clickable {
-    cursor: pointer;
-}
-
 .column {
     display: flex;
     flex-direction: column;

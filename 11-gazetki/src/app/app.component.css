@@ -16,6 +16,11 @@ aside p {
     text-align: right;
 }
 
+table,
+td {
+    border: 1px solid black;
+}
+
 .column {
     display: flex;
     flex-direction: column;
@@ -34,8 +39,4 @@ aside p {
 
 .clickable {
     cursor: pointer;
-}
-
-.hide {
-    display: none;
 }
