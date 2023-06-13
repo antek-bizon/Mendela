@@ -1,0 +1,39 @@
+<div [ngClass]="'row'">
+    <button *ngFor="let year of magazine?.years" [ngClass]="'clickable'" [class.active]="year === selectedYear"
+        (click)="selectYear(year)">{{year}}</button>
+    <button [ngClass]="'clickable'" [class.active]="selectedYear === 'all'"
+        (click)="selectYear('all')">Wszystkie</button>
+    <button [ngClass]="'clickable'" (click)="goBack()">Cofnij</button>
+</div>
+<div *ngIf="selectedYear !== ''">
+    <table>
+        <tr>
+            <th>strona tytułowa</th>
+            <th>plik</th>
+            <th>pismo</th>
+            <th>darczyńcy</th>
+        </tr>
+        <ng-container *ngFor="let issue of magazine?.issues">
+            <tr *ngIf="issue.rok === selectedYear || selectedYear === 'all'">
+                <td>
+                    <img src="http://atarionline.pl/biblioteka/czasopisma/{{magazine?.name}}/{{issue.miniaturka}}">
+                </td>
+                <td>
+                    <p>format: <strong>{{issue.format}}</strong></p>
+                    <p>stron: <strong>{{issue.stron}}</strong></p>
+                    <p>plik:: <strong>{{issue.plik}}</strong></p>
+                </td>
+                <td>
+                    <p>nazwa: <strong>{{issue.nazwa}}</strong></p>
+                    <p>numer: <strong>{{issue.numer}}</strong></p>
+                    <p>wydawca: <strong>{{issue.wydawca}}</strong></p>
+                </td>
+                <td>
+                    <p>skan: <strong>{{issue.skan}}</strong></p>
+                    <p>przetworzenie: <strong>{{issue.przetworzenie}}</strong></p>
+                    <p>podesłał: <strong>{{issue.podeslal}}</strong></p>
+                </td>
+            </tr>
+        </ng-container>
+    </table>
+</div>

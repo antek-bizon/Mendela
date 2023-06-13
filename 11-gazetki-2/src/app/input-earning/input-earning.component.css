@@ -1,0 +1,19 @@
+.clickable {
+    cursor: pointer;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    height: 700px;
+}
+
+.column img {
+    width: 200px;
+    margin: 30px;
+}

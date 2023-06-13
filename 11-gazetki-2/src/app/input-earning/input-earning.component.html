@@ -1,0 +1,14 @@
+<div *ngIf="numberValue !== correctValue; else elseBlock">
+    <p>Wpisz zarobiki z poprzedniego roku:
+        <input [(ngModel)]="inputValue" type="password" (input)="numberOnly($event)">
+        EUR
+    </p>
+    <p>I tak widzimy, ze Twoje zarobki to: {{numberValue | currency:'EUR':'symbol':'1.0-3'}}</p>
+</div>
+<ng-template #elseBlock>
+    <p>Idealne zarobiki by zrobić dalszą część zadania ;)</p>
+    <div [ngClass]="'column'">
+        <img [ngClass]="'clickable'" *ngFor="let magazine of magazines; index as i" (click)="displayMagazine(i)"
+            src="http://atarionline.pl/biblioteka/czasopisma/img/{{magazine.icon}}" alt="{{magazine.icon}}">
+    </div>
+</ng-template>
