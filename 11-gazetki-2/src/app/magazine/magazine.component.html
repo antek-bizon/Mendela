@@ -3,8 +3,8 @@
         (click)="selectYear(year)">{{year}}</button>
     <button [ngClass]="'clickable'" [class.active]="selectedYear === 'all'"
         (click)="selectYear('all')">Wszystkie</button>
-    <button [ngClass]="'clickable'" (click)="goBack()">Cofnij</button>
 </div>
+<button [ngClass]="'clickable'" (click)="goBack()">Cofnij</button>
 <div *ngIf="selectedYear !== ''">
     <table>
         <tr>
